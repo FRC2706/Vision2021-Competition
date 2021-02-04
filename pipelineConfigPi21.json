@@ -1,0 +1,8 @@
+{
+    "networkTableName": "MergeVisionPipelinePi21",
+    "Tape": true,
+    "PowerCell": false,
+    "OutputStream": "2706_out_target",
+    "ExposureTarget": 34,
+    "ExposureBall": 100
+}
