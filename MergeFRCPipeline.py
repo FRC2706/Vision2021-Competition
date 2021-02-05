@@ -34,7 +34,10 @@ from VisionMasking import *
 from DistanceFunctions import *
 from ControlPanel import *
 
+print("Using python version {0}".format(sys.version))
+print()
 print('OpenCV version is', cv2.__version__)
+print()
 
 # import the necessary packages
 import datetime

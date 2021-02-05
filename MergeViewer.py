@@ -29,10 +29,6 @@ from CornersVisual4 import get_four
 from adrian_pyimage import FPS
 from adrian_pyimage import WebcamVideoStream
 
-print("Using python version {0}".format(sys.version))
-print('OpenCV Version = ', cv2.__version__)
-print()
-
 # Imports EVERYTHING from these files
 from FindBall import *
 from FindTarget import *
@@ -41,13 +37,15 @@ from VisionUtilities import *
 from VisionMasking import *
 from DistanceFunctions import *
 from ControlPanel import *
+print()
+print("--- Merge Viewer Starting ---")
+print()
+print("Using python version {0}".format(sys.version))
+print()
+print('OpenCV Version = ', cv2.__version__)
+print()
 
 ###################### PROCESSING OPENCV ################################
-
-# counts frames for writing images
-frameStop = 0
-ImageCounter = 0
-showAverageFPS = False
 
 # CHOOSE VIDEO OR FILES HERE!!!!
 # boolean for video input, if true does video, if false images
@@ -55,6 +53,17 @@ useVideo = False
 # integer for usb camera to use, boolean for live webcam
 useWebCam = False
 webCamNumber = 1
+
+# ADJUST DESIRED TARGET BASED ON VIDEO OR FILES ABOVE !!!
+Driver = False
+Tape = True
+PowerCell = False
+ControlPanel = False
+
+# counts frames for writing images
+frameStop = 0
+ImageCounter = 0
+showAverageFPS = False
 
 #Code to load images from a folder
 def load_images_from_folder(folder):
@@ -84,45 +93,23 @@ elif useWebCam: #test against live camera
 
 else:  # implies images are to be read
     # Power Cell Images
-    #images, imagename = load_images_from_folder("./PowerCell25Scale")
-    #images, imagename = load_images_from_folder("./PowerCellImages")
     #images, imagename = load_images_from_folder("./PowerCellFullScale")
-    #images, imagename = load_images_from_folder("./PowerCellUpperFull")
     #images, imagename = load_images_from_folder("./PowerCellFullMystery")
-    #images, imagename = load_images_from_folder("./PowerCellSketchup")
-    #images, imagename = load_images_from_folder("./LifeCamPhotos")
-
-    # This is the one with the power cell
-    images, imagename = load_images_from_folder("./PowerCellFullRobot")
+    #images, imagename = load_images_from_folder("./PowerCellFullRobot")
 
     # Outer Target Images
-    #images, imagename = load_images_from_folder("./OuterTargetProblems")
+    images, imagename = load_images_from_folder("./OuterTargetFullDistance")
     #images, imagename = load_images_from_folder("./OuterTargetImages")
-    #images, imagename = load_images_from_folder("./OuterTargetHalfScale")
-    #images, imagename = load_images_from_folder("./OuterTargetFullScale")
     #images, imagename = load_images_from_folder("./OuterTargetRingTest")
-    #images, imagename = load_images_from_folder("./OuterTargetHalfDistance")
-    #images, imagename = load_images_from_folder("./OuterTargetFullDistance")
-    #images, imagename = load_images_from_folder("./OuterTargetSketchup")
     #images, imagename = load_images_from_folder("./OuterTargetLiger")
-
-    # Inner Target Images
-    #images, imagename = load_images_from_folder("./InnerTargetExplore")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]
     print(image_height, image_width)
 
-    currentImg = 0
-
 team = 2706
 server = False
 cameraConfigs = []
-
-Driver = False
-Tape = False
-PowerCell = True
-ControlPanel = False
 
 # Method 1 is based on measuring distance between leftmost and rightmost
 # Method 2 is based on measuring the minimum enclosing circle
@@ -145,8 +132,7 @@ elif useWebCam:
     vs = WebcamVideoStream(src=webCamNumber).start()
 
 else:
-    img = images[0]
-    filename = imagename[0]
+    currentImg = 0
     imgLength = len(images)
 
 print("Hello Vision Team!")
@@ -182,8 +168,8 @@ while stayInLoop or cap.isOpened():
         frame = vs.read()
 
     else:
-        imgLength = len(images)
-        frame = img
+        frame = images[currentImg]
+        filename = imagename[currentImg]
 
     if Driver:
         processed = frame
@@ -246,20 +232,20 @@ while stayInLoop or cap.isOpened():
     else:
         cv2.imshow(filename, processed)
 
-        key = cv2.waitKey(0)
-        print(key) 
+        # wait for user input to move or close
+        key = cv2.waitKeyEx(0)
 
-        if key == 27:
-            stayInLoop = False
+        if key == 113 or key == 27:
+            stayInLoop = True
             break
-
-        currentImg += 1
-        print(imgLength)
-
-        if (currentImg == imgLength):
-            currentImg = 0
-
-        img = images[currentImg]
+        if key == 105 or key == 2490368:
+            currentImg = currentImg - 1
+            if currentImg < 0: 
+                currentImg = imgLength - 1
+        if key == 109 or key == 2621440:
+            currentImg = currentImg + 1
+            if currentImg > imgLength - 1:
+                currentImg = 0
 
         #destroy old window
         cv2.destroyWindow(filename)
