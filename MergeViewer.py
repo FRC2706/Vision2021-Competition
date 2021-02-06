@@ -240,11 +240,11 @@ while stayInLoop or cap.isOpened():
         if key == 113 or key == 27: # this is the escape key
             stayInLoop = True
             break
-        if key == 105 or key == 2490368: # this is the up arrow
+        if key == 105 or key == 2490368: # this is the up arrow, and key 'i'
             currentImg = currentImg - 1
             if currentImg < 0: 
                 currentImg = imgLength - 1
-        if key == 109 or key == 2621440: # this is the down arrow
+        if key == 109 or key == 2621440: # this is the down arrow, and key 'm'
             currentImg = currentImg + 1
             if currentImg > imgLength - 1:
                 currentImg = 0
