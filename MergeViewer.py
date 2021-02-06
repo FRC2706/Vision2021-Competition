@@ -235,14 +235,16 @@ while stayInLoop or cap.isOpened():
         # wait for user input to move or close
         key = cv2.waitKeyEx(0)
 
-        if key == 113 or key == 27:
+        print('you pressed this code->', key)
+
+        if key == 113 or key == 27: # this is the escape key
             stayInLoop = True
             break
-        if key == 105 or key == 2490368:
+        if key == 105 or key == 2490368: # this is the up arrow, and key 'i'
             currentImg = currentImg - 1
             if currentImg < 0: 
                 currentImg = imgLength - 1
-        if key == 109 or key == 2621440:
+        if key == 109 or key == 2621440: # this is the down arrow, and key 'm'
             currentImg = currentImg + 1
             if currentImg > imgLength - 1:
                 currentImg = 0
