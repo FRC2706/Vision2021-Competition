@@ -4,16 +4,45 @@ import math
 from VisionUtilities import * 
 from VisionConstants import *
 from DistanceFunctions import *
+from networktables import NetworkTablesInstance
+from networktables.util import ntproperty
 
 try:
     from PrintPublisher import *
 except ImportError:
     from NetworkTablePublisher import *
 
+# Note that findPowerCell uses findBall which uses checkBall
 
-# Draws Contours and finds center and yaw of orange ball
+# Draws on the image - > contours and finds center and yaw of nearest powercell, and second nearest
+# Puts on network tables -> Yaw and Distance to nearest yellow ball, Yaw to second nearest powercell
+# frame is the original images, mask is a binary mask based on desired color
 # centerX is center x coordinate of image
 # centerY is center y coordinate of image
+# MergeVisionPipeLineTableName is the Network Table destination for yaw and distance
+
+# Finds the balls from the masked image and displays them on original stream + network tables
+def findPowerCell(frame, mask, MergeVisionPipeLineTableName):
+    # Finds contours
+    if is_cv3():
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
+    else:
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
+
+    # Take each frame
+    # Gets the shape of video
+    screenHeight, screenWidth, _ = frame.shape
+    # Gets center of height and width
+    centerX = (screenWidth / 2) - .5
+    centerY = (screenHeight / 2) - .5
+    # Copies frame and stores it in image
+    image = frame.copy()
+    # Processes the contours, takes in (contours, output_image, (centerOfImage)
+    if len(contours) != 0:
+        image = findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName)
+    # Shows the contours overlayed on the original video
+    return image
+
 def findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
     screenHeight, screenWidth, channels = image.shape
     # Seen vision targets (correct angle, adjacent to each other)
@@ -92,8 +121,7 @@ def findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             # Sorts targets based on tallest height (bottom of contour to top of screen or y position)
             tallestPowerCell.sort(key=lambda height: math.fabs(height[3]))
 
-
-            # Sorts targets based on area
+            # Sorts targets based on area for end of trench situation, calculates average yaw
             pairOfPowerCells = sorted(pairOfPowerCells, key=lambda x: cv2.contourArea(x), reverse=True)[:2]
             if len(pairOfPowerCells) >= 2:
                 M0 = cv2.moments(pairOfPowerCells[0])
@@ -133,14 +161,14 @@ def findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 # This is handing over X of bottommost point
                 xCoord = bottommost[0]   
 
-            # calculate yaw and store in fT0
+            # calculate yaw and store in finalTarget0
             finalTarget.append(calculateYaw(xCoord, centerX, H_FOCAL_LENGTH))
-            # calculate dist and store in fT1
+            # calculate dist and store in finalTarget1
             finalTarget.append(calculateDistWPILibRyan(closestPowerCell[3],TARGET_BALL_HEIGHT,KNOWN_BALL_PIXEL_HEIGHT,KNOWN_BALL_DISTANCE ))
-            # calculate yaw from pure centroid and store in fT2
+            # calculate yaw from pure centroid and store in finalTarget2
             finalTarget.append(calculateYaw(closestPowerCell[0], centerX, H_FOCAL_LENGTH))
 
-            # calculate yaw to two largest contours for end trench condition, store in fT3
+            # calculate yaw to two largest contours for end trench condition, store in finalTarget3
             if (len(biggestPowerCell) > 1):
                 finalTarget.append(calculateYaw(avecxof2, centerX, H_FOCAL_LENGTH))
 
@@ -166,35 +194,12 @@ def findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             publishNumber(MergeVisionPipeLineTableName, "PowerCentroid1Yaw", finalTarget[2])
             if (len(biggestPowerCell) > 1):
                 publishNumber(MergeVisionPipeLineTableName, "PowerCentroid2Yaw", finalTarget[3])
-                cv2.line(image, (avecxof2, int(screenHeight*0.7)), (avecxof2, int(screenHeight*0.3)), green, 1)
+                cv2.line(image, (avecxof2, int(screenHeight*0.7)), (avecxof2, int(screenHeight*0.3)), green, 2)
 
 
         cv2.line(image, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
 
         return image
-
-
-# Finds the balls from the masked image and displays them on original stream + network tables
-def findPowerCell(frame, mask, MergeVisionPipeLineTableName):
-    # Finds contours
-    if is_cv3():
-        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
-    else:
-        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
-
-    # Take each frame
-    # Gets the shape of video
-    screenHeight, screenWidth, _ = frame.shape
-    # Gets center of height and width
-    centerX = (screenWidth / 2) - .5
-    centerY = (screenHeight / 2) - .5
-    # Copies frame and stores it in image
-    image = frame.copy()
-    # Processes the contours, takes in (contours, output_image, (centerOfImage)
-    if len(contours) != 0:
-        image = findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName)
-    # Shows the contours overlayed on the original video
-    return image
 
 # Checks if ball contours are worthy based off of contour area and (not currently) hull area
 def checkBall(cntArea, image_width,boundingRectContArea):
@@ -204,3 +209,76 @@ def checkBall(cntArea, image_width,boundingRectContArea):
     #above 44% so using 30% is conservative
     #print("cntArea " + str(cntArea))
     return (cntArea > (image_width*2)) and (boundingRectContArea > 0.30)
+
+if __name__ == "__main__":
+
+    # the purpose of this code is to test the functions above
+    # findPowerCell uses findBall which uses checkBall
+    # this test does not use a real network table
+    # TODO #2 get network tables working in test code
+
+    # create empty bgr image for the test
+    bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
+
+    # draw a green rectangle on the test image
+    bgrTestImage = cv2.circle(bgrTestImage,(100,100), 50, (0,255,255),-1)
+
+    # display the test image to verify it visually
+    cv2.imshow('This is the test', bgrTestImage)
+    
+    # convert image to hsv from bgr
+    hsvTestImage = cv2.cvtColor(bgrTestImage, cv2.COLOR_BGR2HSV)
+
+    # using inrange from opencv make mask
+    mskBinary = cv2.inRange(hsvTestImage, (29,254,254), (31,255,255)) # (30, 255, 255)
+
+    # display the mask to verify it visually
+    cv2.imshow('This is the mask', mskBinary)
+
+    # use a dummy network table for test code for now, real network tables not working
+    MergeVisionPipeLineTableName = "DummyNetworkTableName"
+
+    # use findPowerCell, which uses findBall, which uses checkBall to generate image
+    bgrTestFoundBall = findPowerCell(bgrTestImage, mskBinary, MergeVisionPipeLineTableName)
+
+    # display the visual output (nearest based on height) of findBall to verify it visually
+    cv2.imshow('Test of 1 ball findBall output', bgrTestFoundBall)
+
+    # wait for user input to close
+    cv2.waitKey(0)
+
+    # cleanup so we can do second test of two balls
+    cv2.destroyAllWindows()
+
+    # create empty bgr image for the test
+    bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
+
+    # draw two yellow circle on the test image
+    bgrTestImage = cv2.circle(bgrTestImage,(100,100), 50, (0,255,255),-1)
+    bgrTestImage = cv2.circle(bgrTestImage,(280,105), 45, (0,255,255),-1)
+
+    # display the test image to verify it visually
+    cv2.imshow('This is the test', bgrTestImage)
+    
+    # convert image to hsv from bgr
+    hsvTestImage = cv2.cvtColor(bgrTestImage, cv2.COLOR_BGR2HSV)
+
+    # using inrange from opencv make mask
+    mskBinary = cv2.inRange(hsvTestImage, (29,254,254), (31,255,255)) # (30, 255, 255)
+
+    # display the mask to verify it visually
+    cv2.imshow('This is the mask', mskBinary)
+
+    # use a dummy network table for test code for now, real network tables not working
+    MergeVisionPipeLineTableName = "DummyNetworkTableName"
+
+    # use findPowerCell, which uses findBall, which uses checkBall to generate image
+    bgrTestFoundBall = findPowerCell(bgrTestImage, mskBinary, MergeVisionPipeLineTableName)
+
+    # display the visual output (nearest based on height) of findBall to verify it visually
+    cv2.imshow('Test of 2 ball findBall output', bgrTestFoundBall)
+
+    # wait for user input to close
+    cv2.waitKey(0)
+    # cleanup and exit
+    cv2.destroyAllWindows()
