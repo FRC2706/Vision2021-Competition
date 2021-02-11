@@ -113,6 +113,8 @@ def calculateDistWPILibRyan(cntHeight, targetHeight,knownObjectPixelHeight,known
     #65 is the pixel height of a scale image 6 feet away
     #KNOWN_OBJECT_PIXEL_HEIGHT = 65
     #KNOWN_OBJECT_DISTANCE = 6
+
+    # TODO Why is this VIEWANGLE constant set here and how is it calculated?    
     VIEWANGLE = 1.069283813
 
     # print("after 2: ", VIEWANGLE)

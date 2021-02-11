@@ -27,7 +27,7 @@ image_height = 480 # 3
 H_FOCAL_LENGTH = image_width / (2 * math.tan((horizontalView / 2)))
 V_FOCAL_LENGTH = image_height / (2 * math.tan((verticalView / 2)))
 
-#TARGET_HEIGHT is actual height (for balls 7/12 7 inches)   
+#TARGET_HEIGHT is actual height (for balls 7/12 equal ball height in feet)   
 TARGET_BALL_HEIGHT = 0.583
 
 #image height is the y resolution calculated from image size

@@ -220,7 +220,7 @@ if __name__ == "__main__":
     # create empty bgr image for the test
     bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
 
-    # draw a green rectangle on the test image
+    # draw a yellow rectangle on the test image
     bgrTestImage = cv2.circle(bgrTestImage,(100,100), 50, (0,255,255),-1)
 
     # display the test image to verify it visually
