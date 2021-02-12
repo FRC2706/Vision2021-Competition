@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# https://github.com/ligerbots/VisionServer/blob/master/utils/camera_calibration.py
+
+# Thanks Liger Bots, team 2877
 
 import cv2
 import numpy
