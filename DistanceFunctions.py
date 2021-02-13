@@ -124,3 +124,44 @@ def calculateDistWPILibRyan(cntHeight, targetHeight,knownObjectPixelHeight,known
     distance = 39.25/12*640/(2*PIX_HEIGHT* VIEWANGLE1)
 
     return distance    
+
+def calculateDistWPILibBall2021(cntHeight, targetHeight,knownObjectPixelHeight,knownObjectDistance ):
+    global image_height, avg
+
+    for cnt in avg:
+        if cnt == 0:
+            cnt = cntHeight
+
+    del avg[len(avg) - 1]
+    avg.insert(0, cntHeight)
+    PIX_HEIGHT = 0
+    for cnt in avg:
+        PIX_HEIGHT += cnt
+
+    PIX_HEIGHT = PIX_HEIGHT / len(avg)
+
+    #print (PIX_HEIGHT)
+
+
+
+    #print(PIX_HEIGHT, avg)  # print("The contour height is: ", cntHeight)
+
+    #TARGET_HEIGHT is actual height (for balls 7/12 7 inches)   
+    #TARGET_HEIGHT = 0.583
+
+ 
+    #image height is the y resolution calculated from image size
+    #15.81 was the pixel height of a a ball found at a measured distance (which is 6 feet away)
+    #65 is the pixel height of a scale image 6 feet away
+    #KNOWN_OBJECT_PIXEL_HEIGHT = 65
+    #KNOWN_OBJECT_DISTANCE = 6
+    #VIEWANGLE = math.atan((targetHeight * image_height) / (2 * knownObjectPixelHeight * knownObjectDistance))
+    VIEWANGLE=0.295939
+    # print("after 2: ", VIEWANGLE)
+    # VIEWANGLE = math.radians(68.5)
+    distance = ((targetHeight * 10/12*480) / (2 * PIX_HEIGHT * (VIEWANGLE)))
+    print(targetHeight)
+    print(PIX_HEIGHT)
+    print(VIEWANGLE)
+    print(distance)
+    return distance
