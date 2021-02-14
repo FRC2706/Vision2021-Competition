@@ -164,7 +164,7 @@ def findBall(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             # calculate yaw and store in finalTarget0
             finalTarget.append(calculateYaw(xCoord, centerX, H_FOCAL_LENGTH))
             # calculate dist and store in finalTarget1
-            finalTarget.append(calculateDistWPILibBall2021(closestPowerCell[3],TARGET_BALL_HEIGHT,KNOWN_BALL_PIXEL_HEIGHT,KNOWN_BALL_DISTANCE ))
+            finalTarget.append(calculateDistWPILibBall2021(closestPowerCell[3],TARGET_BALL_HEIGHT,tanVABallDistance))
             # calculate yaw from pure centroid and store in finalTarget2
             finalTarget.append(calculateYaw(closestPowerCell[0], centerX, H_FOCAL_LENGTH))
 

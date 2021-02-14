@@ -36,6 +36,9 @@ TARGET_BALL_HEIGHT = 0.583
 KNOWN_BALL_PIXEL_HEIGHT = 65
 KNOWN_BALL_DISTANCE = 6
 
+#tanVA for ball distance calculation in DistanceFunctions.py
+tanVABallDistance=0.295939
+
 # Focal Length calculations: https://docs.google.com/presentation/d/1ediRsI-oR3-kwawFJZ34_ZTlQS2SDBLjZasjzZ-eXbQ/pub?start=false&loop=false&slide=id.g12c083cffa_0_165
 # H_FOCAL_LENGTH = image_width / (2 * math.tan((horizontalView / 2)))
 # V_FOCAL_LENGTH = image_height / (2 * math.tan((verticalView / 2)))
