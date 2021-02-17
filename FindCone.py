@@ -43,6 +43,7 @@ def findConeMarker(frame, mask, MergeVisionPipeLineTableName):
     # Shows the contours overlayed on the original video
     return image
 
+
 # Draws Contours and finds center and yaw of orange cone
 # centerX is center x coordinate of image
 # centerY is center y coordinate of image
