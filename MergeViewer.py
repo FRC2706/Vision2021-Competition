@@ -32,6 +32,7 @@ from adrian_pyimage import WebcamVideoStream
 # Imports EVERYTHING from these files
 from FindBall import *
 from FindTarget import *
+from FindCone import *
 from VisionConstants import *
 from VisionUtilities import *
 from VisionMasking import *
@@ -56,9 +57,10 @@ webCamNumber = 1
 
 # ADJUST DESIRED TARGET BASED ON VIDEO OR FILES ABOVE !!!
 Driver = False
-Tape = True
+Tape = False
 PowerCell = False
 ControlPanel = False
+Cone = True
 
 # counts frames for writing images
 frameStop = 0
@@ -98,10 +100,13 @@ else:  # implies images are to be read
     #images, imagename = load_images_from_folder("./PowerCellFullRobot")
 
     # Outer Target Images
-    images, imagename = load_images_from_folder("./OuterTargetFullDistance")
+    #images, imagename = load_images_from_folder("./OuterTargetFullDistance")
     #images, imagename = load_images_from_folder("./OuterTargetImages")
     #images, imagename = load_images_from_folder("./OuterTargetRingTest")
     #images, imagename = load_images_from_folder("./OuterTargetLiger")
+
+    #Cone Images
+    images, imagename = load_images_from_folder("./OrangePylons")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]
@@ -186,6 +191,10 @@ while stayInLoop or cap.isOpened():
                 boxBlur = blurImg(frame, yellow_blur)
                 threshold = threshold_video(lower_yellow, upper_yellow, frame)
                 processed = findControlPanel(frame, threshold)
+            elif Cone:
+                boxBlur = blurImg(frame, yellow_blur)
+                threshold = threshold_video(lower_orange, upper_orange, boxBlur)
+                processed = findConeMarker(frame, threshold, MergeVisionPipeLineTableName)
 
     # end of cycle so update counter
     #fps.update()

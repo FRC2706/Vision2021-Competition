@@ -29,12 +29,16 @@ V_FOCAL_LENGTH = image_height / (2 * math.tan((verticalView / 2)))
 
 #TARGET_HEIGHT is actual height (for balls 7/12 7 inches)   
 TARGET_BALL_HEIGHT = 0.583
+#for cones 6.5 inches - 6.5/12 (test)
+TARGET_CONE_HEIGHT = 0.542
 
 #image height is the y resolution calculated from image size
 #15.81 was the pixel height of a a ball found at a measured distance (which is 6 feet away)
 #65 is the pixel height of a scale image 6 feet away
 KNOWN_BALL_PIXEL_HEIGHT = 65
 KNOWN_BALL_DISTANCE = 6
+KNOWN_CONE_PIXEL_HEIGHT = 60 #test - made up number
+KNOWN_CONE_DISTANCE = 5 # test - made up
 
 #tanVA for ball distance calculation in DistanceFunctions.py (RL)
 tanVABallDistance=0.295939
@@ -67,5 +71,9 @@ upper_green = np.array([100, 255, 255])
 
 lower_yellow = np.array([10, 150, 65]) # was 14, 150, 150
 upper_yellow = np.array([30, 255, 255])
+
+#define range of orange of cone in HSV
+lower_orange = np.array([1, 190, 130])
+upper_orange = np.array([18, 255, 255])
 
 blingColour = 0

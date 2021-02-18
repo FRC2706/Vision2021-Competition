@@ -4,8 +4,8 @@ import math
 from VisionUtilities import * 
 from VisionConstants import *
 from DistanceFunctions import *
-from networktables import NetworkTablesInstance
-from networktables.util import ntproperty
+#from networktables import NetworkTablesInstance
+# from networktables.util import ntproperty
 
 try:
     from PrintPublisher import *
@@ -214,7 +214,7 @@ def checkCone(cntArea, image_width,boundingRectContArea):
     #print("cntArea " + str(cntArea))
     return (cntArea > (image_width*2)) and (boundingRectContArea > 0.30)
     
-  if __name__ == "__main__":
+if __name__ == "__main__":
 
     # the purpose of this code is to test the functions above
     # findConeMarker uses findCone which uses checkBall
