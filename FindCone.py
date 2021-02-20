@@ -212,8 +212,10 @@ def checkCone(cntArea, image_width,boundingRectContArea):
     #greater than 30%.  A single cone is usually 70-80% while groups of cones are usually
     #above 44% so using 30% is conservative
     #print("cntArea " + str(cntArea))
-    return (cntArea > (image_width*2)) and (boundingRectContArea > 0.30)
-    
+    #return (cntArea > (image_width*2)) and (boundingRectContArea > 0.30)
+    #return (True)
+    return (cntArea > 20)
+
 if __name__ == "__main__":
 
     # the purpose of this code is to test the functions above
