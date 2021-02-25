@@ -98,8 +98,8 @@ else:  # implies images are to be read
     #images, imagename = load_images_from_folder("./PowerCellFullRobot")
 
     # Outer Target Images
-    images, imagename = load_images_from_folder("./OuterTargetFullDistance")
-    #images, imagename = load_images_from_folder("./OuterTargetImages")
+    #images, imagename = load_images_from_folder("./OuterTargetFullDistance")
+    images, imagename = load_images_from_folder("./OuterTargetImages")
     #images, imagename = load_images_from_folder("./OuterTargetRingTest")
     #images, imagename = load_images_from_folder("./OuterTargetLiger")
 
@@ -108,7 +108,8 @@ else:  # implies images are to be read
     print(image_height, image_width)
 
 team = 2706
-server = False
+server = True
+MergeVisionPipeLineTableName = "DummyNetworkTableName"
 cameraConfigs = []
 
 # Method 1 is based on measuring distance between leftmost and rightmost
@@ -152,7 +153,6 @@ displayFPS = 3.14159265
 begin = milliSince1970()
 start = begin
 prev_update = start
-MergeVisionPipeLineTableName = "DummyNetworkTableName"
 
 while stayInLoop or cap.isOpened():
 
