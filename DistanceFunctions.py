@@ -140,7 +140,7 @@ def calculateDistWPILibBall2021(cntHeight, targetHeight, VIEWANGLE):
 
     PIX_HEIGHT = PIX_HEIGHT / len(avg)
     #Formula for distance calculations https://docs.wpilib.org/en/stable/docs/software/vision-processing/introduction/2017-vision-examples.html
-    distance = ((targetHeight * 10/12*480) / (2 * PIX_HEIGHT * (VIEWANGLE)))
+    distance = ((targetHeight*480) / (2 * PIX_HEIGHT * (VIEWANGLE)))
     print(targetHeight)
     print(PIX_HEIGHT)
     print(VIEWANGLE)
