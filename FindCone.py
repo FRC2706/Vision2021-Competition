@@ -123,7 +123,7 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             finalTarget = []
             # Sorts targets based on tallest height (bottom of contour to top of screen or y position)
             tallestCone.sort(key=lambda height: math.fabs(height[3]))
-
+            print("len(tallestCone)=", len(tallestCone))
 
             # Sorts targets based on area  for end of trench situation, calculates average yaw (RL)
             pairOfCones = sorted(pairOfCones, key=lambda x: cv2.contourArea(x), reverse=True)[:2]
@@ -137,44 +137,45 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             #sorts closestCone - contains center-x, center-y, contour and contour height from the
             #bounding rectangle.  The closest one has the largest bottom point
+            
+            closestConeList = sorted(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
             closestCone = min(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
+            if len(closestConeList) > 1: 
+                closestCone2 = closestConeList[1];
 
-            # extreme points
-            #topmost = tuple(closestCone[2][closestCone[2][:,:,1].argmin()][0])
-            bottommost = tuple(closestCone[2][closestCone[2][:,:,1].argmax()][0])
+            # RL: Do calculations depending on whether there are one or two cones
 
-            # draw extreme points
-            # from https://www.pyimagesearch.com/2016/04/11/finding-extreme-points-in-contours-with-opencv/
-            #cv2.circle(image, topmost, 6, white, -1)
-            cv2.circle(image, bottommost, 6, blue, -1)
-            ##print('extreme points', leftmost,rightmost,topmost,bottommost)
+            if len(closestConeList) >= 1:
+                cone0 = closestConeList[0];
+                topmost0 = tuple(cone0[2][cone0[2][:,:,1].argmin()][0])
+                cv2.circle(image, topmost0, 6, white, -1)
+                xCoord = topmost0[0];
+                yaw = calculateYaw(xCoord, centerX, H_FOCAL_LENGTH)
+                d = calculateDistWPILibRyan(cone0[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
 
-            #print("topmost: " + str(topmost[0]))
-            #print("bottommost: " + str(bottommost[0]))
-           
-            #print("bottommost[1]: " + str(bottommost[1]))
-            #print("screenheight: " + str(screenHeight))
+            if len(closestConeList) >= 2:
+                cone1 = closestConeList[1];
+                topmost1 = tuple(cone1[2][cone1[2][:,:,1].argmin()][0])
+                cv2.circle(image, topmost1, 6, white, -1)
+                xCoord1 = topmost1[0];
+                yaw1 = calculateYaw(xCoord1, centerX, H_FOCAL_LENGTH)
+                d1 = calculateDistWPILibRyan(cone1[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
 
-            # Contour that fills up bottom seems to reside on one less than 
-            # screen height.  For example, screenHeight of 480 has bottom
-            # pixel as 479, probably because 0-479 = 480 pixel rows
-            if (int(bottommost[1]) >= screenHeight - 1):
-                # This is handing over centoid X when bottommost is in bottom row
-                xCoord = closestCone[0]
-            else:
-                # This is handing over X of bottommost point
-                xCoord = bottommost[0]   
+                yawRad = math.radians(yaw)
+                yaw1Rad = math.radians(yaw1)
+                wx = 0.5 * ( d*math.sin(yawRad) + d1*math.sin(yaw1Rad) )
+                wy = 0.5 * ( d*math.cos(yawRad) + d1*math.cos(yaw1Rad) )
+                d = math.sqrt(wx*wx + wy*wy)
+                yawRad = math.atan(wx/wy)
+                yaw = math.degrees(yawRad)
+                xCoord = 160 + round(160 * math.tan(yawRad)/math.tan(horizontalView/2.0))
+                print("xCoord=", xCoord)
 
-            # calculate yaw and store in finalTarget0 (RL)
-            finalTarget.append(calculateYaw(xCoord, centerX, H_FOCAL_LENGTH))
-            # calculate dist and store in finalTarget1 (RL)
-            finalTarget.append(calculateDistWPILibRyan(closestCone[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE ))
-            # calculate yaw from pure centroid and store in finalTarget2 (RL)
-            finalTarget.append(calculateYaw(closestCone[0], centerX, H_FOCAL_LENGTH))
+            if len(closestConeList) > 0:
+                finalTarget.append(yaw)
+                finalTarget.append(d)
+                finalTarget.append(yaw)
 
-            # calculate yaw to two largest contours for end trench condition, store in fT3
-            if (len(biggestCone) > 1):
-                finalTarget.append(calculateYaw(avecxof2, centerX, H_FOCAL_LENGTH))
 
             #print("Yaw: " + str(finalTarget[0]))
             # Puts the yaw on screen
@@ -188,20 +189,17 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             cv2.putText(image, "cxYaw: " + str(finalTarget[2]), (450, 360), cv2.FONT_HERSHEY_COMPLEX, .6,
                         white)
-            if (len(biggestCone) > 1):
-                cv2.putText(image, "cxYaw2: " + str(finalTarget[3]), (450, 400), cv2.FONT_HERSHEY_COMPLEX, .6,
-                        white)
 
             # pushes cone angle to network tables
             publishNumber(MergeVisionPipeLineTableName, "YawToCone", finalTarget[0])
             publishNumber(MergeVisionPipeLineTableName, "DistanceToCone", finalYaw)
             publishNumber(MergeVisionPipeLineTableName, "ConeCentroid1Yaw", finalTarget[2])
-            if (len(biggestCone) > 1):
-                publishNumber(MergeVisionPipeLineTableName, "ConeCentroid2Yaw", finalTarget[3])
-                cv2.line(image, (avecxof2, int(screenHeight*0.7)), (avecxof2, int(screenHeight*0.3)), green, 1)
+            #if (len(biggestCone) > 1):
+            #    publishNumber(MergeVisionPipeLineTableName, "ConeCentroid2Yaw", finalTarget[3])
+            #    cv2.line(image, (avecxof2, int(screenHeight*0.7)), (avecxof2, int(screenHeight*0.3)), green, 1)
 
 
-        cv2.line(image, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
+        #cv2.line(image, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
 
         return image
 

@@ -20,9 +20,18 @@ diagonalAspect = math.hypot(horizontalAspect, verticalAspect)
 horizontalView = math.atan(math.tan(diagonalView / 2) * (horizontalAspect / diagonalAspect)) * 2
 verticalView = math.atan(math.tan(diagonalView / 2) * (verticalAspect / diagonalAspect)) * 2
 
+# RL: From camera calibration for iphone:
+horizontalView = math.radians(84.5)
+verticalView = math.radians(69.68)
+
 # MAY CHANGE IN FUTURE YEARS! This is the aspect ratio used in 2020
 image_width = 640 # 4
 image_height = 480 # 3
+
+# RL:
+image_width = 320 # 4
+image_height = 240 # 3
+
 
 H_FOCAL_LENGTH = image_width / (2 * math.tan((horizontalView / 2)))
 V_FOCAL_LENGTH = image_height / (2 * math.tan((verticalView / 2)))
