@@ -46,11 +46,13 @@ TARGET_CONE_HEIGHT = 0.542
 #65 is the pixel height of a scale image 6 feet away
 KNOWN_BALL_PIXEL_HEIGHT = 65
 KNOWN_BALL_DISTANCE = 6
-KNOWN_CONE_PIXEL_HEIGHT = 60 #test - made up number
-KNOWN_CONE_DISTANCE = 5 # test - made up
+
+KNOWN_CONE_PIXEL_HEIGHT = 22
+KNOWN_CONE_DISTANCE = 6
 
 #tanVA for ball distance calculation in DistanceFunctions.py (RL)
 tanVABallDistance=0.295939
+tanVAConeDistance = 0.4233782532
 
 # Focal Length calculations: https://docs.google.com/presentation/d/1ediRsI-oR3-kwawFJZ34_ZTlQS2SDBLjZasjzZ-eXbQ/pub?start=false&loop=false&slide=id.g12c083cffa_0_165
 # H_FOCAL_LENGTH = image_width / (2 * math.tan((horizontalView / 2)))
@@ -82,7 +84,7 @@ lower_yellow = np.array([10, 150, 65]) # was 14, 150, 150
 upper_yellow = np.array([30, 255, 255])
 
 #define range of orange of cone in HSV
-lower_orange = np.array([1, 190, 130])
+lower_orange = np.array([1, 130, 170])
 upper_orange = np.array([18, 255, 255])
 
 blingColour = 0
