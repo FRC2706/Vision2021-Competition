@@ -4,8 +4,8 @@ import math
 from VisionUtilities import * 
 from VisionConstants import *
 from DistanceFunctions import *
-from networktables import NetworkTablesInstance
-from networktables.util import ntproperty
+#from networktables import NetworkTablesInstance
+#from networktables.util import ntproperty
 
 try:
     from PrintPublisher import *

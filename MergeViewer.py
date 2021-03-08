@@ -32,6 +32,7 @@ from adrian_pyimage import WebcamVideoStream
 # Imports EVERYTHING from these files
 from FindBall import *
 from FindTarget import *
+from FindStaticElement import *
 from VisionConstants import *
 from VisionUtilities import *
 from VisionMasking import *
@@ -56,7 +57,8 @@ webCamNumber = 1
 
 # ADJUST DESIRED TARGET BASED ON VIDEO OR FILES ABOVE !!!
 Driver = False
-Tape = True
+Tape = False
+StaticElement=True
 PowerCell = False
 ControlPanel = False
 
@@ -123,7 +125,11 @@ cameraConfigs = []
 # Method 9 is a five point visual method using SolvePNP (Brian and Erik)
 # Method 10 is a four point SolvePNP blending M7 and M8 (everybody!)
 
+
 Method = 7
+
+# Static Element method 1 is based on measuring extreme points on diamonds (Jamie, Lenie, Ryan) 
+StaticElementMethod = 1
 
 if useVideo and not useWebCam:
     cap = cv2.VideoCapture(videoname)
@@ -177,6 +183,9 @@ while stayInLoop or cap.isOpened():
         if Tape:
             threshold = threshold_video(lower_green, upper_green, frame)
             processed = findTargets(frame, threshold, Method, MergeVisionPipeLineTableName)
+        elif StaticElement:
+            threshold = threshold_video(lower_green, upper_green, frame)
+            processed = findStaticElements(frame, threshold, StaticElementMethod, MergeVisionPipeLineTableName)
         else:
             if PowerCell:
                 boxBlur = blurImg(frame, yellow_blur)
