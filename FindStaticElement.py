@@ -139,7 +139,7 @@ def compute_output_values(rvec, tvec):
 
     # distance in the horizontal plane between camera and target
     distance = math.sqrt(x**2 + z**2)
-
+    print('Distance:', distance)
     # horizontal angle between camera center line and target
     angleInRad = math.atan2(x, z)
     angle1 = math.degrees(angleInRad)
