@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import cv2
 
 from VisionConstants import *
 from VisionMasking import *
@@ -23,7 +24,7 @@ real_world_coordinates = np.array([
 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
-def findStaticElements(frame, mask, CornerMethod, MergeVisionPipeLineTableName):
+def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
 
     # Taking a matrix of size 5 as the kernel 
     #kernel = np.ones((3,3), np.uint8) 
@@ -57,7 +58,7 @@ def findStaticElements(frame, mask, CornerMethod, MergeVisionPipeLineTableName):
     image = frame.copy()
     # Processes the contours, takes in (contours, output_image, (centerOfImage)
     if len(contours) != 0:
-        image = findDiamond(contours, image, centerX, centerY, mask, CornerMethod, MergeVisionPipeLineTableName)
+        image = findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, MergeVisionPipeLineTableName)
     # Shows the contours overlayed on the original video
     return image
 
@@ -177,7 +178,7 @@ def displaycorners(image, outer_corners):
 # centerX is center x coordinate of image
 # centerY is center y coordinate of image
 
-def findDiamond(contours, image, centerX, centerY, mask, CornerMethod, MergeVisionPipeLineTableName):
+def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, MergeVisionPipeLineTableName):
     global blingColour
     #global warped
     screenHeight, screenWidth, channels = image.shape
@@ -188,6 +189,7 @@ def findDiamond(contours, image, centerX, centerY, mask, CornerMethod, MergeVisi
     minContourArea = 0.6 * screenWidth;
 
     if len(contours) >= 1:
+        print("LC Contours count > 1")
         # Sort contours by area size (biggest to smallest)
         cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:10]
        
@@ -200,7 +202,7 @@ def findDiamond(contours, image, centerX, centerY, mask, CornerMethod, MergeVisi
 
                 # Calculate Contour area
                 cntArea = cv2.contourArea(cnt)
-
+                print("LC cntArea:"+str(cntArea))
                 # rotated rectangle fingerprinting
                 rect = cv2.minAreaRect(cnt)
                 (xr,yr),(wr,hr),ar = rect #x,y width, height, angle of rotation = rotated rect
@@ -224,13 +226,13 @@ def findDiamond(contours, image, centerX, centerY, mask, CornerMethod, MergeVisi
                 solidity = float(cntArea)/hull_area
 
                 # Filter based on area
-                if (cntArea < minContourArea): continue 
+                # LC - if (cntArea < minContourArea): continue 
                 # Filter based on minimum area extent (previous values: 0.16-0.26)
-                if (minAextent < 0.139 or minAextent > 1.1): continue
+                # LC - if (minAextent < 0.139 or minAextent > 1.1): continue
                 # Filter based on aspect ratio (previous values: 2-3)
-                if (cntAspectRatio < 1.7 or cntAspectRatio > 3.3): continue
+                # LC - if (cntAspectRatio < 1.7 or cntAspectRatio > 3.3): continue
                 # Filter based on solidity (previous values: 0.22-0.35)
-                if (solidity < 0.19 or solidity > 0.35): continue
+                # LC - if (solidity < 0.19 or solidity > 0.35): continue
 
                 cntsFiltered.append(cnt)
                 #end fingerprinting
@@ -238,6 +240,7 @@ def findDiamond(contours, image, centerX, centerY, mask, CornerMethod, MergeVisi
             # We will work on the filtered contour with the largest area which is the
             # first one in the list
             if (len(cntsFiltered) > 0):
+                print("LC length of cntsFiltered:"+str(len(cntsFiltered)))
 
                 cnt = cntsFiltered[0]
 
@@ -342,3 +345,62 @@ def checkDiamondSize(cntArea, cntAspectRatio):
     #return (cntArea > image_width/3 and cntArea < MAXIMUM_TARGET_AREA and cntAspectRatio > 1.0)
     return (cntArea > image_width/3 and cntAspectRatio > 1.0)
 
+if __name__ == "__main__":
+
+    import sys
+
+    # Print python version
+    print('\n')
+    print('Python version', sys.version, '\n')
+
+    # Print version string
+    cv2Version = '{0}'.format(cv2.__version__)
+    print('OpenCV version', '{0}'.format(cv2.__version__), '\n')
+
+    # setup image counter
+    imageCounter = 0
+
+    # create empty bgr image for the test
+    bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
+
+    # draw a green diamond on the test image
+    pts = np.array([[200,60],[250,110],[200,160],[150,110]], np.int32)
+    bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,255,0), -1)
+
+    pts = np.array([[200,80],[230,110],[200,140],[170,110]], np.int32)
+    bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
+
+
+    # display the test image to verify it visually
+    cv2.imshow('This is the test image', bgrTestImage)
+
+    # convert image to hsv from bgr
+    hsvTestImage = cv2.cvtColor(bgrTestImage, cv2.COLOR_BGR2HSV)
+
+    # using inrange from opencv make mask
+    mskBinary = cv2.inRange(hsvTestImage,  (55, 220, 220), (65, 255, 255),)
+
+    # generate the array of Contours
+    contours, hierarchy = cv2.findContours(mskBinary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    print('Found', len(contours), 'contours in this photo!')
+
+    # pass test image, binary mask and cotours to function to display all as is
+    centerX = 160
+    centerY = 120
+    SEMethodToUse = 1
+    TestNTToUse = "Test"
+    #bgrfdOut = findDiamond(contours, bgrTestImage, centerX, centerY, mskBinary, SEMethodToUse, TestNTToUse)
+    bgrfdOut = findDiamond(contours, bgrTestImage, centerX, centerY, mskBinary, SEMethodToUse, TestNTToUse)
+    #ke = filterCirclesIn(bgrTestImage, mskBinary, contours, cv2Version)
+
+    cv2.imshow('bgrfdOUt', bgrfdOut)
+
+    ke = cv2.waitKey(0)
+
+    indiv = contours[0]
+
+    # print user keypress
+    print ('ke = ', ke)
+
+    # cleanup and exit
+    cv2.destroyAllWindows()
