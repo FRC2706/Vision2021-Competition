@@ -15,12 +15,32 @@ except ImportError:
     from NetworkTablePublisher import *
 
 
+#real_world_coordinates = np.array([
+#    [6.1653543, 0.0, 0.0],  # Top most point
+#    [0.0, 6.1653543, 0.0], # Left most Point
+#    [ 12.330709, 6.1653543, 0.0], #Bottom most Point
+#    [6.1653543, 12.330709, 0.0], #Right most Point
+#])
+#real_world_coordinates = np.array([
+#    [7.14, 0.0, 0.0],  # Top most point
+#    [0.0, 7.14, 0.0], # Left most Point
+#    [14.28, 7.14, 0.0], #Bottom most Point
+#    [7.14, 14.28, 0.0], #Right most Point
+#])
+
+#real_world_coordinates = np.array([
+ #   [-7.14, 0.0, 0.0],  # Top most point
+  #  [0.0, -7.14, 0.0], # Left most Point
+   # [7.14, 0.0, 0.0], #Bottom most Point
+    #[0.0, 7.14, 0.0], #Right most Point
+    #])
+
 real_world_coordinates = np.array([
-    [6.1653543, 0.0, 0.0],  # Top most point
-    [0.0, 6.1653543, 0.0], # Left most Point
-    [ 12.330709, 6.1653543, 0.0], #Bottom most Point
-    [6.1653543, 12.330709, 0.0], #Right most Point
-])
+    [0.0, 7.14, 0.0],# Top most point
+    [-7.14, 0.0, 0.0],# Left most Point
+    [0.0, -7.14, 0.0], #Bottom most Point
+    [7.14, 0.0, 0.0], #Right most Point
+    ])
 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
@@ -105,20 +125,29 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #                      [0, 0, 1]], dtype = "double"
     #                      )
 
-    dist_coeffs = np.array([[0.16171335604097975, -0.9962921370737408, -4.145368586842373e-05, 
-                             0.0015152030328047668, 1.230483016701437]])
+    #dist_coeffs = np.array([[0.16171335604097975, -0.9962921370737408, -4.145368586842373e-05, 
+    #                         0.0015152030328047668, 1.230483016701437]])
 
-    camera_matrix = np.array([[676.9254672222575, 0.0, 303.8922263320326], 
-                              [0.0, 677.958895098853, 226.64055316186037], 
-                              [0.0, 0.0, 1.0]], dtype = "double")
+    #camera_matrix = np.array([[676.9254672222575, 0.0, 303.8922263320326], 
+    #                          [0.0, 677.958895098853, 226.64055316186037], 
+    #                          [0.0, 0.0, 1.0]], dtype = "double")
+    camera_matrix = np.array([
+        [272.36049320004605, 0.0, 157.62816826544375], 
+        [0.0, 257.46612122321454, 98.90302088583047],
+        [0.0, 0.0, 1.0]
+        ], dtype = 'double')
 
+    dist_coeffs = np.array([
+        [1.5298022258256136, -17.6800174425778, 0.05117671205418792, -0.04020311562261712, 44.20234463669946]
+        ], dtype = 'double')
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
  
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
     (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
  
-    #print ("Rotation Vector:\n {0}".format(rotation_vector))
-    #print ("Translation Vector:\n {0}".format(translation_vector))
+    print ("Rotation Vector:\n {0}".format(rotation_vector))
+    print ("Translation Vector:\n {0}".format(translation_vector))
+    print ('outer_corners:',outer_corners)
     return success, rotation_vector, translation_vector
 
 
@@ -132,10 +161,12 @@ def compute_output_values(rvec, tvec):
 
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
-    tilt_angle = math.radians(28)
+    tilt_angle = math.radians(0)
 
     x = tvec[0][0]
     z = math.sin(tilt_angle) * tvec[1][0] + math.cos(tilt_angle) * tvec[2][0]
+    print('x:',x)
+    print('z:',z)
 
     # distance in the horizontal plane between camera and target
     distance = math.sqrt(x**2 + z**2)
@@ -268,7 +299,9 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     
                     # If success then print values to screen                               
                     if success:
+
                         distance, angle1, angle2 = compute_output_values(rvec, tvec)
+
                         #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
                         RobotYawToDiamond = 180-abs(angle2)
                         cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)

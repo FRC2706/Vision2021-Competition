@@ -28,7 +28,7 @@ def calculateDistance(heightOfCamera, heightOfTarget, pitch):
 
     return distance
 
-avg = [0 for i in range(0, 1)]
+avg = [0 for i in range(8)]
 #8 is number of frames to calculated average pixel height
 
 def calculateDistWPILib(cntHeight, targetHeight,knownObjectPixelHeight,knownObjectDistance ):
