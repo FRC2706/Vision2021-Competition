@@ -1,0 +1,1 @@
+python camera_calibration.py --length 13 --width 8 --size 2.3571429 --output cm-20 --output-images out mr-cm-20-05.jpg mr-cm-20-06.jpg mr-cm-20-08.jpg mr-cm-20-09.jpg mr-cm-20-10.jpg mr-cm-20-12.jpg mr-cm-20-15.jpg mr-cm-20-17.jpg mr-cm-20-18.jpg mr-cm-20-21.jpg mr-cm-20-22.jpg mr-cm-20-24.jpg mr-cm-20-25.jpg mr-cm-20-27.jpg mr-cm-20-28.jpg
