@@ -200,7 +200,7 @@ while stayInLoop or cap.isOpened():
     # end of cycle so update counter
     #fps.update()
     # in merge view also end of time we want to measure so stop FPS
-    #fps.stop()
+    #fps.stop()q
     frameCount = frameCount+1
     update = milliSince1970()
 
