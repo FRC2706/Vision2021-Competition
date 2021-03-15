@@ -118,9 +118,6 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             # copy
             tallestCone = biggestCone
 
-            # pushes that it sees cargo to network tables
-
-            finalTarget = []
             # Sorts targets based on tallest height (bottom of contour to top of screen or y position)
             tallestCone.sort(key=lambda height: math.fabs(height[3]))
             print("len(tallestCone)=", len(tallestCone))
@@ -145,74 +142,72 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             # RL: Do calculations depending on whether there are one or two cones
 
-            if len(closestConeList) >= 1:
-                cone0 = closestConeList[0];
-                topmost0 = tuple(cone0[2][cone0[2][:,:,1].argmin()][0])
-                cv2.circle(image, topmost0, 6, white, -1)
-                xCoord = topmost0[0];
-                yaw = calculateYaw(xCoord, centerX, H_FOCAL_LENGTH)
-                d = calculateDistWPILibRyan(cone0[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
+            yaw1 = -99.0;
+            d1 = -99.0;
+            yawMid = -99.0;
+            dMid = -99.0;
+            phiMid = -99.0;
 
-            if len(closestConeList) >= 2:
-                cone1 = closestConeList[1];
+            if len(closestConeList) >= 1:
+                cone1 = closestConeList[0];
                 topmost1 = tuple(cone1[2][cone1[2][:,:,1].argmin()][0])
                 cv2.circle(image, topmost1, 6, white, -1)
                 xCoord1 = topmost1[0];
                 yaw1 = calculateYaw(xCoord1, centerX, H_FOCAL_LENGTH)
                 d1 = calculateDistWPILibRyan(cone1[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
 
-                yawRad = math.radians(yaw)
-                yaw1Rad = math.radians(yaw1)
-                wx = 0.5 * ( d*math.sin(yawRad) + d1*math.sin(yaw1Rad) )
-                wy = 0.5 * ( d*math.cos(yawRad) + d1*math.cos(yaw1Rad) )
+            if len(closestConeList) >= 2:
+                cone2 = closestConeList[1];
+                topmost2 = tuple(cone2[2][cone2[2][:,:,1].argmin()][0])
+                cv2.circle(image, topmost2, 6, white, -1)
+                xCoord2 = topmost2[0];
+                yaw2 = calculateYaw(xCoord2, centerX, H_FOCAL_LENGTH)
+                d2 = calculateDistWPILibRyan(cone2[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
 
-                v2mv1x = d1*math.sin(yaw1Rad) - d*math.sin(yawRad)
-                v2mv1y = d1*math.cos(yaw1Rad) - d*math.cos(yawRad)
-                phiRad = math.atan(-v2mv1y/v2mv1x)
-                phi = math.degrees(phiRad)
-                print("v2x=", d1*math.sin(yaw1Rad))
-                print("v2y=", d1*math.cos(yaw1Rad))
-                print("v1x=", d*math.sin(yawRad))
-                print("v1y=", d*math.cos(yawRad))
+                yaw1Rad = math.radians(yaw1)
+                yaw2Rad = math.radians(yaw2)
+                wx = 0.5 * ( d1*math.sin(yaw1Rad) + d2*math.sin(yaw2Rad) )
+                wy = 0.5 * ( d1*math.cos(yaw1Rad) + d2*math.cos(yaw2Rad) )
+
+                v2mv1x = d2*math.sin(yaw2Rad) - d1*math.sin(yaw1Rad)
+                v2mv1y = d2*math.cos(yaw2Rad) - d1*math.cos(yaw1Rad)
+                phiMidRad = math.atan(-v2mv1y/v2mv1x)
+                phiMid = math.degrees(phiMidRad)
+                print("v2x=", d2*math.sin(yaw2Rad))
+                print("v2y=", d2*math.cos(yaw2Rad))
+                print("v1x=", d1*math.sin(yaw1Rad))
+                print("v1y=", d1*math.cos(yaw1Rad))
                 print("v2mv1x=", v2mv1x)
                 print("v2mv1y=", v2mv1y)
-                print("phi=", phi)
+                print("phiMid=", phiMid)
 
-                d = math.sqrt(wx*wx + wy*wy)
-                yawRad = math.atan(wx/wy)
-                yaw = math.degrees(yawRad)
-                xCoord = 160 + round(160 * math.tan(yawRad)/math.tan(horizontalView/2.0))
-                print("xCoord=", xCoord)
+                dMid = math.sqrt(wx*wx + wy*wy)
+                yawMidRad = math.atan(wx/wy)
+                yawMid = math.degrees(yawMidRad)
+                xCoordMid = 160 + round(160 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
+                print("xCoordMid=", xCoordMid)
 
-            if len(closestConeList) > 0:
-                finalTarget.append(yaw)
-                finalTarget.append(d)
-                finalTarget.append(yaw)
+            # Print results on screen
+            # Draws line where center of target is
+            if len(closestConeList) >= 2:
+                yawDisp = round(yawMid*1000)/1000
+                dDisp = dMid
+                xCoordDisp = xCoordMid
+            elif len(closestConeList) >= 1:
+                yawDisp = round(yaw1*1000)/1000
+                dDisp = d1
+                xCoordDisp = xCoord1
 
-
-            #print("Yaw: " + str(finalTarget[0]))
-            # Puts the yaw on screen
-            # Draws yaw of target + line where center of target is
-            finalYaw = round(finalTarget[1]*1000)/1000
-            cv2.putText(image, "Yaw: " + str(finalTarget[0]), (40, 360), cv2.FONT_HERSHEY_COMPLEX, .6,
-                        white)
-            cv2.putText(image, "Dist: " + str(finalYaw), (40, 400), cv2.FONT_HERSHEY_COMPLEX, .6,
-                        white)
-            cv2.line(image, (xCoord, screenHeight), (xCoord, 0), blue, 2)
-
-            cv2.putText(image, "cxYaw: " + str(finalTarget[2]), (450, 360), cv2.FONT_HERSHEY_COMPLEX, .6,
-                        white)
+            #cv2.putText(image, "Yaw: " + str(yawDisp), (40, 360), cv2.FONT_HERSHEY_COMPLEX, .6, white)
+            #cv2.putText(image, "Dist: " + str(dDisp), (40, 400), cv2.FONT_HERSHEY_COMPLEX, .6, white)
+            cv2.line(image, (xCoordDisp, screenHeight), (xCoordDisp, 0), blue, 2)
 
             # pushes cone angle to network tables
-            publishNumber(MergeVisionPipeLineTableName, "YawToCone", finalTarget[0])
-            publishNumber(MergeVisionPipeLineTableName, "DistanceToCone", finalYaw)
-            publishNumber(MergeVisionPipeLineTableName, "ConeCentroid1Yaw", finalTarget[2])
-            #if (len(biggestCone) > 1):
-            #    publishNumber(MergeVisionPipeLineTableName, "ConeCentroid2Yaw", finalTarget[3])
-            #    cv2.line(image, (avecxof2, int(screenHeight*0.7)), (avecxof2, int(screenHeight*0.3)), green, 1)
-
-
-        #cv2.line(image, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
+            publishNumber(MergeVisionPipeLineTableName, "YawToSingleCone", yaw1)
+            publishNumber(MergeVisionPipeLineTableName, "DistanceSingleToCone", d1)
+            publishNumber(MergeVisionPipeLineTableName, "YawToTwoConeMidpoint", yawMid)
+            publishNumber(MergeVisionPipeLineTableName, "DistanceToTwoConeMidpoint", dMid)
+            publishNumber(MergeVisionPipeLineTableName, "RotationAngleToTwoConePerpendicular", phiMid)
 
         return image
 
