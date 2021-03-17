@@ -31,8 +31,8 @@ from adrian_pyimage import WebcamVideoStream
 
 # Imports EVERYTHING from these files
 from FindBall import *
-from FindTarget import *
 from FindCone import *
+from FindTarget import *
 from VisionConstants import *
 from VisionUtilities import *
 from VisionMasking import *
@@ -219,8 +219,8 @@ while stayInLoop or cap.isOpened():
     # because we are timing in this file, have to add the fps to image processed 
     #cv2.putText(processed, 'elapsed time: {:.2f}'.format(fps.elapsed()), (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
     #cv2.putText(processed, 'FPS: {:.7f}'.format(3.14159265), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-    cv2.putText(processed, "frame time: " + str(int(processedMilli)) + " ms", (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-    cv2.putText(processed, 'Instant FPS: {:.2f}'.format(1000/(processedMilli)), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+    #cv2.putText(processed, "frame time: " + str(int(processedMilli)) + " ms", (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+    #cv2.putText(processed, 'Instant FPS: {:.2f}'.format(1000/(processedMilli)), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
     
     if (showAverageFPS): 
         cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 120), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)

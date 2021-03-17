@@ -27,6 +27,7 @@ import math
 
 # Imports EVERYTHING from these files
 from FindBall import *
+from FindCone import *
 from FindTarget import *
 from VisionConstants import *
 from VisionUtilities import *
@@ -509,7 +510,8 @@ if __name__ == "__main__":
                 if (networkTableVisionPipeline.getBoolean("SendMask", False)):
                     processed = threshold
                 else:   
-                    processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
+                    #processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
+                    processed = findConeMarker(frame, threshold, MergeVisionPipeLineTableName)
 
             # elif (networkTableVisionPipeline.getBoolean("ControlPanel", True)):
             #     # Checks if you just want camera for Control Panel, by dent of everything else being false, true by default

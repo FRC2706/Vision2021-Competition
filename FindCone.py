@@ -120,7 +120,6 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             # Sorts targets based on tallest height (bottom of contour to top of screen or y position)
             tallestCone.sort(key=lambda height: math.fabs(height[3]))
-            print("len(tallestCone)=", len(tallestCone))
 
             # Sorts targets based on area  for end of trench situation, calculates average yaw (RL)
             pairOfCones = sorted(pairOfCones, key=lambda x: cv2.contourArea(x), reverse=True)[:2]
@@ -166,26 +165,33 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
                 yaw1Rad = math.radians(yaw1)
                 yaw2Rad = math.radians(yaw2)
-                wx = 0.5 * ( d1*math.sin(yaw1Rad) + d2*math.sin(yaw2Rad) )
-                wy = 0.5 * ( d1*math.cos(yaw1Rad) + d2*math.cos(yaw2Rad) )
 
-                v2mv1x = d2*math.sin(yaw2Rad) - d1*math.sin(yaw1Rad)
-                v2mv1y = d2*math.cos(yaw2Rad) - d1*math.cos(yaw1Rad)
+                v1x = d1*math.sin(yaw1Rad)
+                v1y = d1*math.cos(yaw1Rad)
+                v2x = d2*math.sin(yaw2Rad)
+                v2y = d2*math.cos(yaw2Rad)
+
+                wx = 0.5*(v1x + v2x)
+                wy = 0.5*(v1y + v2y)
+
+                v2mv1x = v2x - v1x
+                v2mv1y = v2y - v1y
+
                 phiMidRad = math.atan(-v2mv1y/v2mv1x)
                 phiMid = math.degrees(phiMidRad)
-                print("v2x=", d2*math.sin(yaw2Rad))
-                print("v2y=", d2*math.cos(yaw2Rad))
-                print("v1x=", d1*math.sin(yaw1Rad))
-                print("v1y=", d1*math.cos(yaw1Rad))
-                print("v2mv1x=", v2mv1x)
-                print("v2mv1y=", v2mv1y)
-                print("phiMid=", phiMid)
+
+                #print("v2x=", v2x)
+                #print("v2y=", v2y)
+                #print("v1x=", v1x)
+                #print("v1y=", v1y)
+                #print("v2mv1x=", v2mv1x)
+                #print("v2mv1y=", v2mv1y)
+                #print("phiMid=", phiMid)
 
                 dMid = math.sqrt(wx*wx + wy*wy)
                 yawMidRad = math.atan(wx/wy)
                 yawMid = math.degrees(yawMidRad)
                 xCoordMid = 160 + round(160 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
-                print("xCoordMid=", xCoordMid)
 
             # Print results on screen
             # Draws line where center of target is
@@ -198,8 +204,8 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 dDisp = d1
                 xCoordDisp = xCoord1
 
-            #cv2.putText(image, "Yaw: " + str(yawDisp), (40, 360), cv2.FONT_HERSHEY_COMPLEX, .6, white)
-            #cv2.putText(image, "Dist: " + str(dDisp), (40, 400), cv2.FONT_HERSHEY_COMPLEX, .6, white)
+            cv2.putText(image, "Yaw: " + str(yawDisp), (40, 120), cv2.FONT_HERSHEY_COMPLEX, .6, white)
+            cv2.putText(image, "Dist: " + str(dDisp), (40, 160), cv2.FONT_HERSHEY_COMPLEX, .6, white)
             cv2.line(image, (xCoordDisp, screenHeight), (xCoordDisp, 0), blue, 2)
 
             # pushes cone angle to network tables
