@@ -16,19 +16,19 @@ except ImportError:
     from NetworkTablePublisher import *
 
 
-real_world_coordinates = np.array([
-    [0.0, -6.17125984, 0.0],# Top most point
-    [-11.1712598, 0.0, 0.0],# Left most Point
-    [0.0, 6.17125984, 0.0], #Bottom most Point
-    [11.1712598, 0.0, 0.0], #Right most Point
-    ])
+#real_world_coordinates = np.array([
+#    [0.0, -6.17125984*1.5, 0.0],# Top most point
+#    [-11.1712598*1.5, 0.0, 0.0],# Left most Point
+#    [0.0, 6.17125984*1.5, 0.0], #Bottom most Point
+#    [11.1712598*1.5, 0.0, 0.0], #Right most Point
+#    ])
 
 real_world_coordinates = np.array([
-    [0.0, -6.17125984*1.5, 0.0],# Top most point
-    [-11.1712598*1.5, 0.0, 0.0],# Left most Point
-    [0.0, 6.17125984*1.5, 0.0], #Bottom most Point
-    [11.1712598*1.5, 0.0, 0.0], #Right most Point
-    ])
+    [-11.1712598*1.55, 0.0, 0.0],# Left most Point
+    [11.1712598*1.55, 0.0, 0.0], #Right most Point
+    [0.0, -6.17125984*1.55, 0.0],# Top most point
+    [0.0, 6.17125984*1.55, 0.0], #Bottom most Point
+    ]) 
 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
@@ -131,7 +131,6 @@ def compute_output_values(rvec, tvec):
 
     # distance in the horizontal plane between camera and target
     distance = math.sqrt(x**2 + z**2)
-    print('Distance:', distance)
     # horizontal angle between camera center line and target
     angleInRad = math.atan2(x, z)
     angle1 = math.degrees(angleInRad)
@@ -181,7 +180,6 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
     minContourArea = 0.6 * screenWidth;
 
     if len(contours) >= 1:
-        print("LC Contours count > 1")
         # Sort contours by area size (biggest to smallest)
         cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:10]
        
@@ -195,7 +193,6 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
                 # Calculate Contour area
                 cntArea = cv2.contourArea(cnt)
-                print("LC cntArea:"+str(cntArea))
                 # rotated rectangle fingerprinting
                 rect = cv2.minAreaRect(cnt)
                 (xr,yr),(wr,hr),ar = rect #x,y width, height, angle of rotation = rotated rect
@@ -218,22 +215,13 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                 hull_area = cv2.contourArea(hull)
                 solidity = float(cntArea)/hull_area
 
-                # Filter based on area
-                # LC - if (cntArea < minContourArea): continue 
-                # Filter based on minimum area extent (previous values: 0.16-0.26)
-                # LC - if (minAextent < 0.139 or minAextent > 1.1): continue
-                # Filter based on aspect ratio (previous values: 2-3)
-                # LC - if (cntAspectRatio < 1.7 or cntAspectRatio > 3.3): continue
-                # Filter based on solidity (previous values: 0.22-0.35)
-                # LC - if (solidity < 0.19 or solidity > 0.35): continue
-
                 cntsFiltered.append(cnt)
                 #end fingerprinting
 
             # We will work on the filtered contour with the largest area which is the
             # first one in the list
             if (len(cntsFiltered) == 4):
-                print("LC length of cntsFiltered:"+str(len(cntsFiltered)))
+                print("Length of cntsFiltered:"+str(len(cntsFiltered)))
 
                 for c in cntsFiltered:
                     M=cv2.moments(c)
@@ -266,11 +254,17 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
                 rw_coordinates = real_world_coordinates
 
+                #outer_corners = np.array([
+                #                            topmost,
+                #                            leftmost,
+                #                            bottommost,
+                #                            rightmost
+                #                        ], dtype="double") 
                 outer_corners = np.array([
-                                            topmost,
                                             leftmost,
-                                            bottommost,
-                                            rightmost
+                                            rightmost,
+                                            topmost,
+                                            bottommost
                                         ], dtype="double") 
 
                 if (foundCorners):
