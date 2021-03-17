@@ -104,7 +104,9 @@ else:  # implies images are to be read
     #images, imagename = load_images_from_folder("./OuterTargetImages")
     #images, imagename = load_images_from_folder("./OuterTargetRingTest")
     #images, imagename = load_images_from_folder("./OuterTargetLiger")
-    images, imagename = load_images_from_folder("./2021-irahTapeTesting")
+    #images, imagename = load_images_from_folder("./2021-irahTapeTesting")
+    images, imagename = load_images_from_folder("./2021-irahFourDiamonds")
+
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]

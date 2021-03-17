@@ -1,7 +1,6 @@
 import math
 import numpy as np
 import cv2
-import operator
 
 from VisionConstants import *
 from VisionMasking import *
@@ -16,11 +15,31 @@ except ImportError:
     from NetworkTablePublisher import *
 
 
+#real_world_coordinates = np.array([
+#    [6.1653543, 0.0, 0.0],  # Top most point
+#    [0.0, 6.1653543, 0.0], # Left most Point
+#    [ 12.330709, 6.1653543, 0.0], #Bottom most Point
+#    [6.1653543, 12.330709, 0.0], #Right most Point
+#])
+#real_world_coordinates = np.array([
+#    [7.14, 0.0, 0.0],  # Top most point
+#    [0.0, 7.14, 0.0], # Left most Point
+#    [14.28, 7.14, 0.0], #Bottom most Point
+#    [7.14, 14.28, 0.0], #Right most Point
+#])
+
+#real_world_coordinates = np.array([
+ #   [-7.14, 0.0, 0.0],  # Top most point
+  #  [0.0, -7.14, 0.0], # Left most Point
+   # [7.14, 0.0, 0.0], #Bottom most Point
+    #[0.0, 7.14, 0.0], #Right most Point
+    #])
+
 real_world_coordinates = np.array([
-    [0.0, 6.17125984, 0.0],# Top most point
-    [-11.1712598, 0.0, 0.0],# Left most Point
-    [0.0, -6.17125984, 0.0], #Bottom most Point
-    [11.1712598, 0.0, 0.0], #Right most Point
+    [0.0, 7.14, 0.0],# Top most point
+    [-7.14, 0.0, 0.0],# Left most Point
+    [0.0, -7.14, 0.0], #Bottom most Point
+    [7.14, 0.0, 0.0], #Right most Point
     ])
 
 
@@ -63,6 +82,33 @@ def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTabl
     # Shows the contours overlayed on the original video
     return image
 
+def get_four_points(cnt):
+    # Get the left, right, and bottom points
+    # extreme points
+    leftmost = tuple(cnt[cnt[:,:,0].argmin()][0])
+    rightmost = tuple(cnt[cnt[:,:,0].argmax()][0])
+    topmost = tuple(cnt[cnt[:,:,1].argmin()][0])
+    bottommost = tuple(cnt[cnt[:,:,1].argmax()][0])
+    #print('extreme points', leftmost,rightmost,topmost,bottommost)
+
+    # Calculate centroid
+    M = cv2.moments(cnt)
+    cx = int(M['m10']/M['m00'])
+    cy = int(M['m01']/M['m00'])
+    #print('centroid = ',cx,cy)
+    #cv2.line(image,(cx-10,cy-10),(cx+10,cy+10),red,2)
+    #cv2.line(image,(cx-10,cy+10),(cx+10,cy-10),red,2)
+
+    # Order of points in contour appears to be top, left, bottom, right
+
+    four_points = np.array([
+                            topmost,
+                            leftmost,
+                            bottommost,
+                            rightmost
+                            ], dtype="double")
+
+    return True, four_points
 
 
 def findTvecRvec(image, outer_corners, real_world_coordinates):
@@ -111,7 +157,7 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
 #angle 2 is the Yaw of the Robot to the target
 
 def compute_output_values(rvec, tvec):
-    '''Compu    te the necessary output distance and angles'''
+    '''Compute the necessary output distance and angles'''
 
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
@@ -179,7 +225,6 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
         cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:10]
        
         cntsFiltered = []
-        centroidDiamonds = []
 
         # First contour has largest area, so only go further if that one meets minimum area criterion
         if cntsSorted:
@@ -225,48 +270,18 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
             # We will work on the filtered contour with the largest area which is the
             # first one in the list
-            if (len(cntsFiltered) == 4):
+            if (len(cntsFiltered) > 0):
                 print("LC length of cntsFiltered:"+str(len(cntsFiltered)))
 
-                for c in cntsFiltered:
-                    M=cv2.moments(c)
-                    cx=int(M['m10']/M["m00"])
-                    cy=int(M['m01']/M["m00"])
-                    print('centroid = ', cx,cy)
-                    cv2.drawContours(image, [c], -1, (36,145,232), 2)
-                    centroidDiamonds.append((cx,cy))
-
-                print('Original Centroid Diamond: ', centroidDiamonds)
-                centroidDiamonds.sort(key = operator.itemgetter(0))
-                print('Centroid Diamonds sorted by x: ', centroidDiamonds)
-
-                leftmost = centroidDiamonds[0]
-                rightmost = centroidDiamonds[3]
-
-                centroidDiamonds.sort(key = operator.itemgetter(1))
-                print('Centroid DIamonds sorted by y: ', centroidDiamonds)
-
-                bottommost = centroidDiamonds[0]
-                topmost = centroidDiamonds[3]
-
-                print('leftmost: ', leftmost)
-                print('rightmost: ', rightmost)
-                print('bottommost: ', bottommost)
-                print('topmost: ', topmost)
+                cnt = cntsFiltered[0]
 
                 rw_coordinates = real_world_coordinates
 
                 #Pick which Corner solving method to use
-                foundCorners = True
+                foundCorners = False
 
                 rw_coordinates = real_world_coordinates
-
-                outer_corners = np.array([
-                                            topmost,
-                                            leftmost,
-                                            bottommost,
-                                            rightmost
-                                        ], dtype="double") 
+                foundCorners, outer_corners = get_four_points(cnt)
 
                 if (foundCorners):
                     displaycorners(image, outer_corners)
