@@ -17,10 +17,17 @@ except ImportError:
 
 
 real_world_coordinates = np.array([
-    [0.0, 6.17125984, 0.0],# Top most point
+    [0.0, -6.17125984, 0.0],# Top most point
     [-11.1712598, 0.0, 0.0],# Left most Point
-    [0.0, -6.17125984, 0.0], #Bottom most Point
+    [0.0, 6.17125984, 0.0], #Bottom most Point
     [11.1712598, 0.0, 0.0], #Right most Point
+    ])
+
+real_world_coordinates = np.array([
+    [0.0, -6.17125984*1.5, 0.0],# Top most point
+    [-11.1712598*1.5, 0.0, 0.0],# Left most Point
+    [0.0, 6.17125984*1.5, 0.0], #Bottom most Point
+    [11.1712598*1.5, 0.0, 0.0], #Right most Point
     ])
 
 
@@ -246,15 +253,13 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                 centroidDiamonds.sort(key = operator.itemgetter(1))
                 print('Centroid DIamonds sorted by y: ', centroidDiamonds)
 
-                bottommost = centroidDiamonds[0]
-                topmost = centroidDiamonds[3]
+                bottommost = centroidDiamonds[3]
+                topmost = centroidDiamonds[0]
 
                 print('leftmost: ', leftmost)
                 print('rightmost: ', rightmost)
                 print('bottommost: ', bottommost)
-                print('topmost: ', topmost)
-
-                rw_coordinates = real_world_coordinates
+                print('topmost: ', topmost) 
 
                 #Pick which Corner solving method to use
                 foundCorners = True
