@@ -1,0 +1,1 @@
+python camera_calibration.py --length 13 --width 9 --size 1.5748 --output cm-03 --output-images out vlcsnap-2021-03-16-19h44m43s878.png vlcsnap-2021-03-16-19h45m05s506.png vlcsnap-2021-03-16-19h45m18s747.png vlcsnap-2021-03-16-19h45m41s283.png vlcsnap-2021-03-16-19h46m00s006.png vlcsnap-2021-03-16-19h46m00s006.png vlcsnap-2021-03-16-19h47m13s728.png

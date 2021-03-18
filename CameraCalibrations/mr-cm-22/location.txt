@@ -1,0 +1,3 @@
+This camera is an ELP wide angle camera.
+It is presently located on the minibot.
+It is the rear facing driver camera.

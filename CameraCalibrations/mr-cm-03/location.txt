@@ -1,0 +1,3 @@
+This camera is a Microsoft HD3000 Life Cam.
+It is located on the minibot in the from frame rail.
+It has a darkening filter and a green ring light on relay X.

@@ -1,0 +1,3 @@
+This camera is a ELP wide angle camera.
+It is located on the minibot facing forward.
+It is not centered.
