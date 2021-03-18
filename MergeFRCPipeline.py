@@ -28,6 +28,7 @@ import math
 # Imports EVERYTHING from these files
 from FindBall import *
 from FindTarget import *
+from FindStaticElement import *
 from VisionConstants import *
 from VisionUtilities import *
 from VisionMasking import *
@@ -85,6 +86,7 @@ class WebcamVideoStream:
 
         self.switchBall = False
         self.switchTape = False
+        self.switchDiamond = False
         
         # Make a blank image to write on
         self.img = np.zeros(shape=(frameWidth, frameHeight, 3), dtype=np.uint8)
@@ -142,6 +144,17 @@ class WebcamVideoStream:
                     self.webcam.setExposureManual(ExposureBall)
                     self.switchBall = True
                     #self.prevValue = self.autoExpose
+
+            elif switch == 4: #Diamond Static Element Mode - set manual exposure to 20
+                #self.autoExpose = False
+                #self.switchTape = True
+                #if self.autoExpose != self.prevValue:
+                if self.switchDiamond != True:
+                    self.webcam.setExposureManual(60)
+                    self.webcam.setExposureManual(ExposureDiamond)
+                    self.switchDiamond = True
+                    #self.prevValue = self.autoExpose
+            
 
             # gets the image and timestamp from cameraserver
             (self.timestamp, self.img) = self.stream.grabFrame(self.img)
@@ -203,9 +216,11 @@ with open(pipelineConfig) as json_file:
 MergeVisionPipeLineTableName = data["networkTableName"]
 TapeEnabled = data["Tape"]
 PowerCellEnabled = data["PowerCell"]
+DiamondEnabled = data["Diamond"]
 OutputStream = data["OutputStream"]
 ExposureTape = data["ExposureTarget"]
 ExposureBall = data["ExposureBall"]
+ExposureDiamond = data["ExposureDiamond"]
 
 #print("ExposureT: "+ str(ExposureTape))
 #print("ExposureB: " + str(ExposureBall))
@@ -215,6 +230,9 @@ if TapeEnabled:
 
 if PowerCellEnabled:
     switch = 3
+
+if DiamondEnabled:
+    switch = 4
 
 #MergeVisionPublishingTable = "MergeVision"
 
@@ -388,6 +406,7 @@ if __name__ == "__main__":
     networkTableVisionPipeline.putBoolean("Driver", False)
     networkTableVisionPipeline.putBoolean("Tape", TapeEnabled)
     networkTableVisionPipeline.putBoolean("PowerCell", PowerCellEnabled)
+    networkTableVisionPipeline.putBoolean("Diamond", DiamondEnabled)
     #networkTable.putBoolean("ControlPanel", False)
     networkTableVisionPipeline.putBoolean("WriteImages", False)
     networkTableVisionPipeline.putBoolean("SendMask", False)
@@ -510,6 +529,14 @@ if __name__ == "__main__":
                     processed = threshold
                 else:   
                     processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
+            elif (networkTableVisionPipeline.getBoolean("Diamond", True)):
+                 switch = 4
+                 Method = int(networkTableVisionPipeline.getNumber("Method", 1))
+                 threshold = threshold_video(lower_green, upper_green, frame)
+                 if (networkTableVisionPipeline.getBoolean("SendMask", False)):
+                    processed = threshold
+                 else:    
+                   processed = findStaticElements(frame, threshold, Method, MergeVisionPipeLineTableName)                
 
             # elif (networkTableVisionPipeline.getBoolean("ControlPanel", True)):
             #     # Checks if you just want camera for Control Panel, by dent of everything else being false, true by default
