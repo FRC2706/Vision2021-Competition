@@ -23,6 +23,13 @@ except ImportError:
 
 # Finds the cones from the masked image and displays them on original stream + network tables
 def findConeMarker(frame, mask, MergeVisionPipeLineTableName):
+    # Copies frame and stores it in image
+    image = frame.copy()
+    processed = findConeMarkerWithProcessed(frame, image, mask, MergeVisionPipeLineTableName)
+    return processed
+
+# Finds the cones from the masked image and displays them on the "processed" stream passed in as an argument + network tables
+def findConeMarkerWithProcessed(frame, processed, mask, MergeVisionPipeLineTableName):
     # Finds contours
     if is_cv3():
         _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
@@ -36,12 +43,12 @@ def findConeMarker(frame, mask, MergeVisionPipeLineTableName):
     centerX = (screenWidth / 2) - .5
     centerY = (screenHeight / 2) - .5
     # Copies frame and stores it in image
-    image = frame.copy()
+    # image = frame.copy()
     # Processes the contours, takes in (contours, output_image, (centerOfImage)
     if len(contours) != 0:
-        image = findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName)
+        processed = findCone(contours, processed, centerX, centerY, MergeVisionPipeLineTableName)
     # Shows the contours overlayed on the original video
-    return image
+    return processed
 
 
 # Draws Contours and finds center and yaw of orange cone
@@ -177,8 +184,11 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 v2mv1x = v2x - v1x
                 v2mv1y = v2y - v1y
 
-                phiMidRad = math.atan(-v2mv1y/v2mv1x)
-                phiMid = math.degrees(phiMidRad)
+                if (v2mv1x != 0.0):
+                    phiMidRad = math.atan(-v2mv1y/v2mv1x)
+                    phiMid = math.degrees(phiMidRad)
+                else:
+                    phiMid = 90.0
 
                 #print("v2x=", v2x)
                 #print("v2y=", v2y)
@@ -195,18 +205,24 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             # Print results on screen
             # Draws line where center of target is
-            if len(closestConeList) >= 2:
-                yawDisp = round(yawMid*1000)/1000
-                dDisp = dMid
-                xCoordDisp = xCoordMid
-            elif len(closestConeList) >= 1:
-                yawDisp = round(yaw1*1000)/1000
-                dDisp = d1
-                xCoordDisp = xCoord1
+            yawMidDisp = round(yawMid*1000)/1000
+            dMidDisp = round(dMid*100)/100
+            yawSingleDisp = round(yaw1*1000)/1000
+            dSingleDisp = round(d1*100)/100            
+            phiMidDisp = round(phiMid*1000)/1000
 
-            cv2.putText(image, "Yaw: " + str(yawDisp), (40, 120), cv2.FONT_HERSHEY_COMPLEX, .6, white)
-            cv2.putText(image, "Dist: " + str(dDisp), (40, 160), cv2.FONT_HERSHEY_COMPLEX, .6, white)
-            cv2.line(image, (xCoordDisp, screenHeight), (xCoordDisp, 0), blue, 2)
+            if len(closestConeList) >= 1:
+                xCoordSingleDisp = xCoord1
+                cv2.line(image, (xCoordSingleDisp, screenHeight), (xCoordSingleDisp, 0), blue, 2)
+            if len(closestConeList) >= 2:
+                xCoordMidDisp = xCoordMid
+                cv2.line(image, (xCoordMidDisp, screenHeight), (xCoordMidDisp, 0), red, 2)
+
+            cv2.putText(image, "Yaw Single: " + str(yawSingleDisp), (40, 160), cv2.FONT_HERSHEY_COMPLEX, .4, white)
+            cv2.putText(image, "Dist Single: " + str(dSingleDisp), (40, 180), cv2.FONT_HERSHEY_COMPLEX, .4, white)
+            cv2.putText(image, "Yaw Mid: " + str(yawMidDisp), (180, 160), cv2.FONT_HERSHEY_COMPLEX, .4, white)
+            cv2.putText(image, "Dist Mid: " + str(dMidDisp), (180, 180), cv2.FONT_HERSHEY_COMPLEX, .4, white)
+            cv2.putText(image, "Phi Mid: " + str(phiMidDisp), (180, 200), cv2.FONT_HERSHEY_COMPLEX, .4, white)
 
             # pushes cone angle to network tables
             publishNumber(MergeVisionPipeLineTableName, "YawToSingleCone", yaw1)

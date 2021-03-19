@@ -84,7 +84,10 @@ lower_yellow = np.array([10, 150, 65]) # was 14, 150, 150
 upper_yellow = np.array([30, 255, 255])
 
 #define range of orange of cone in HSV
-lower_orange = np.array([1, 130, 170])
+#lower_orange = np.array([1, 130, 170])
+#upper_orange = np.array([18, 255, 255])
+# New range from Jamie
+lower_orange = np.array([1, 190, 130])
 upper_orange = np.array([18, 255, 255])
 
 blingColour = 0

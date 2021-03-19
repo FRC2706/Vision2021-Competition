@@ -223,10 +223,10 @@ while stayInLoop or cap.isOpened():
     #cv2.putText(processed, 'Instant FPS: {:.2f}'.format(1000/(processedMilli)), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
     
     if (showAverageFPS): 
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 120), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
+        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 220), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
     else:
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 120), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 220), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
 
     cv2.imshow("raw", frame)
     cv2.setMouseCallback('raw', draw_circle)
