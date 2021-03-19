@@ -2,6 +2,7 @@
     "networkTableName": "MergeVisionPipelinePi20",
     "Tape": false,
     "PowerCell": true,
+    "Diamond": false,
     "OutputStream": "2706_out_ball",
     "ExposureTarget": 17,
     "ExposureBall": 100

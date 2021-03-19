@@ -101,4 +101,4 @@ zipObj6.write('MergeFRCPipeline.py','uploaded.py')
 zipObj6.write('CornersVisual4.py')
 zipObj6.write('pipelineConfigPractPi22.json', 'pipelineConfig.json')
 
-print("I have wrote the file: " + FILENAME + ", " + FILENAME2 + ", " + FILENAME3 + " and " + FILENAME4 + " and " + FILENAME5 + " and " + FILENAME6)
+print("I have written the files: \n" + FILENAME + ", \n" + FILENAME2 + ", \n" + FILENAME3 + ", \n" + FILENAME4 + ", \n" + FILENAME5 + " and \n" + FILENAME6 + "\n")
