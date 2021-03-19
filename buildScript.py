@@ -4,6 +4,8 @@ FILENAME = "visionCompPi20.zip"
 FILENAME2 = "visionCompPi21.zip"
 FILENAME3 = "visionPracticePi20.zip"
 FILENAME4 = "visionPracticePi21.zip"
+FILENAME5 = "visionCompPi22.zip"
+FILENAME6 = "visionPracticePi22.zip"
 
 #create a ZipFile object
 zipObj = zipfile.ZipFile(FILENAME, 'w')
@@ -13,7 +15,7 @@ zipObj.write('ControlPanel.py')
 zipObj.write('DistanceFunctions.py')
 zipObj.write('FindBall.py')
 zipObj.write('FindTarget.py')
-zipObj3.write('FindStaticElement.py')
+zipObj.write('FindStaticElement.py')
 zipObj.write('VisionConstants.py')
 zipObj.write('VisionMasking.py')
 zipObj.write('VisionUtilities.py')
@@ -29,7 +31,7 @@ zipObj2.write('ControlPanel.py')
 zipObj2.write('DistanceFunctions.py')
 zipObj2.write('FindBall.py')
 zipObj2.write('FindTarget.py')
-zipObj3.write('FindStaticElement.py')
+zipObj2.write('FindStaticElement.py')
 zipObj2.write('VisionConstants.py')
 zipObj2.write('VisionMasking.py')
 zipObj2.write('VisionUtilities.py')
@@ -59,7 +61,7 @@ zipObj4.write('ControlPanel.py')
 zipObj4.write('DistanceFunctions.py')
 zipObj4.write('FindBall.py')
 zipObj4.write('FindTarget.py')
-zipObj3.write('FindStaticElement.py')
+zipObj4.write('FindStaticElement.py')
 zipObj4.write('VisionConstants.py')
 zipObj4.write('VisionMasking.py')
 zipObj4.write('VisionUtilities.py')
@@ -68,4 +70,35 @@ zipObj4.write('MergeFRCPipeline.py','uploaded.py')
 zipObj4.write('CornersVisual4.py')
 zipObj4.write('pipelineConfigPractPi21.json', 'pipelineConfig.json')
 
-print("I have wrote the file: " + FILENAME + ", " + FILENAME2 + ", " + FILENAME3 + " and " + FILENAME4)
+zipObj5 = zipfile.ZipFile(FILENAME5, 'w')
+
+zipObj5.write('ControlPanel.py')
+zipObj5.write('DistanceFunctions.py')
+zipObj5.write('FindBall.py')
+zipObj5.write('FindTarget.py')
+zipObj5.write('FindStaticElement.py')
+zipObj5.write('VisionConstants.py')
+zipObj5.write('VisionMasking.py')
+zipObj5.write('VisionUtilities.py')
+zipObj5.write('NetworkTablePublisher.py')
+zipObj5.write('MergeFRCPipeline.py','uploaded.py')
+zipObj5.write('CornersVisual4.py')
+zipObj5.write('pipelineConfigPi22.json', 'pipelineConfig.json')
+
+
+zipObj6 = zipfile.ZipFile(FILENAME6, 'w')
+
+zipObj6.write('ControlPanel.py')
+zipObj6.write('DistanceFunctions.py')
+zipObj6.write('FindBall.py')
+zipObj6.write('FindTarget.py')
+zipObj6.write('FindStaticElement.py')
+zipObj6.write('VisionConstants.py')
+zipObj6.write('VisionMasking.py')
+zipObj6.write('VisionUtilities.py')
+zipObj6.write('NetworkTablePublisher.py')
+zipObj6.write('MergeFRCPipeline.py','uploaded.py')
+zipObj6.write('CornersVisual4.py')
+zipObj6.write('pipelineConfigPractPi22.json', 'pipelineConfig.json')
+
+print("I have wrote the file: " + FILENAME + ", " + FILENAME2 + ", " + FILENAME3 + " and " + FILENAME4 + " and " + FILENAME5 + " and " + FILENAME6)
