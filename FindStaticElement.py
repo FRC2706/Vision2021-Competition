@@ -106,9 +106,9 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
     (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
  
-    print ("Rotation Vector:\n {0}".format(rotation_vector))
-    print ("Translation Vector:\n {0}".format(translation_vector))
-    print ('outer_corners:',outer_corners)
+    #print ("Rotation Vector:\n {0}".format(rotation_vector))
+    #print ("Translation Vector:\n {0}".format(translation_vector))
+    #print ('outer_corners:',outer_corners)
     return success, rotation_vector, translation_vector
 
 
@@ -235,41 +235,39 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
                 for c in cntsFiltered:
                     M=cv2.moments(c)
-                    cx=int(M['m10']/M["m00"])
-                    cy=int(M['m01']/M["m00"])
-                    print('centroid = ', cx,cy)
+                    if M["m00"] != 0:
+                        cx=int(M['m10']/M["m00"])
+                        cy=int(M['m01']/M["m00"])
+                    else:
+                        cx, cy = 0, 0
+
+                    #print('centroid = ', cx,cy)
                     cv2.drawContours(image, [c], -1, (36,145,232), 2)
                     centroidDiamonds.append((cx,cy))
 
-                print('Original Centroid Diamond: ', centroidDiamonds)
+                #print('Original Centroid Diamond: ', centroidDiamonds)
                 centroidDiamonds.sort(key = operator.itemgetter(0))
-                print('Centroid Diamonds sorted by x: ', centroidDiamonds)
+                #print('Centroid Diamonds sorted by x: ', centroidDiamonds)
 
                 leftmost = centroidDiamonds[0]
                 rightmost = centroidDiamonds[3]
 
                 centroidDiamonds.sort(key = operator.itemgetter(1))
-                print('Centroid DIamonds sorted by y: ', centroidDiamonds)
+                #print('Centroid DIamonds sorted by y: ', centroidDiamonds)
 
                 bottommost = centroidDiamonds[3]
                 topmost = centroidDiamonds[0]
 
-                print('leftmost: ', leftmost)
-                print('rightmost: ', rightmost)
-                print('bottommost: ', bottommost)
-                print('topmost: ', topmost) 
+                #print('leftmost: ', leftmost)
+                #print('rightmost: ', rightmost)
+                #print('bottommost: ', bottommost)
+                #print('topmost: ', topmost) 
 
                 #Pick which Corner solving method to use
                 foundCorners = True
 
                 rw_coordinates = real_world_coordinates
 
-                #outer_corners = np.array([
-                #                            topmost,
-                #                            leftmost,
-                #                            bottommost,
-                #                            rightmost
-                #                        ], dtype="double") 
                 outer_corners = np.array([
                                             leftmost,
                                             rightmost,
