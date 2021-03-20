@@ -1,9 +1,10 @@
 {
     "networkTableName": "MergeVisionPipelinePi20",
     "Tape": false,
-    "PowerCell": true,
-    "Diamond": false,
-    "OutputStream": "2706_out_ball",
+    "PowerCell": false,
+    "Diamond": true,
+    "OutputStream": "2706_out_diamond",
     "ExposureTarget": 17,
-    "ExposureBall": 100
+    "ExposureBall": 100,
+    "ExposureDiamond": 17
 }

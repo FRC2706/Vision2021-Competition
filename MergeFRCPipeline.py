@@ -222,6 +222,8 @@ ExposureTape = data["ExposureTarget"]
 ExposureBall = data["ExposureBall"]
 ExposureDiamond = data["ExposureDiamond"]
 
+print('\n', DiamondEnabled, ExposureDiamond)
+
 #print("ExposureT: "+ str(ExposureTape))
 #print("ExposureB: " + str(ExposureBall))
 
@@ -396,8 +398,7 @@ if __name__ == "__main__":
     streamViewer = VideoShow(image_width, image_height, cameraServer, frame=img).start()
 
     # cap.autoExpose=True;
-    tape = True
-
+    # tape = True ## BC
     
     networkTableMatchVariables.putBoolean("StartUp",False)
     networkTableMatchVariables.putBoolean("ShutDown",False)
@@ -419,7 +420,10 @@ if __name__ == "__main__":
 
     # choose Method HERE !!!!!
     Method = 7 # likely not needed
+    SE_Method = 1
+    
     networkTableVisionPipeline.putNumber("Method", 7)
+    networkTableVisionPipeline.putNumber("SE_Method", 1)
 
     # Method 1 is based on measuring distance between leftmost and rightmost
     # Method 2 is based on measuring the minimum enclosing circle
@@ -459,7 +463,6 @@ if __name__ == "__main__":
         #print("bling Colour" + str(blingColour))
         #if networkTableTime.getNumber("Match Time", 1) == 0:
         #    networkTable.putBoolean("WriteImages", False)
-
         
         if (startedImageWrite == False and networkTableMatchVariables.getBoolean("StartUp",False)):
             startedImageWrite = True
@@ -531,12 +534,12 @@ if __name__ == "__main__":
                     processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
             elif (networkTableVisionPipeline.getBoolean("Diamond", True)):
                  switch = 4
-                 Method = int(networkTableVisionPipeline.getNumber("Method", 1))
+                 SE_Method = int(networkTableVisionPipeline.getNumber("SE_Method", 1))
                  threshold = threshold_video(lower_green, upper_green, frame)
                  if (networkTableVisionPipeline.getBoolean("SendMask", False)):
                     processed = threshold
                  else:    
-                   processed = findStaticElements(frame, threshold, Method, MergeVisionPipeLineTableName)                
+                   processed = findStaticElements(frame, threshold, SE_Method, MergeVisionPipeLineTableName)                
 
             # elif (networkTableVisionPipeline.getBoolean("ControlPanel", True)):
             #     # Checks if you just want camera for Control Panel, by dent of everything else being false, true by default

@@ -24,10 +24,10 @@ except ImportError:
 #    ])
 
 real_world_coordinates = np.array([
-    [-11.1712598*1.55, 0.0, 0.0],# Left most Point
-    [11.1712598*1.55, 0.0, 0.0], #Right most Point
-    [0.0, -6.17125984*1.55, 0.0],# Top most point
-    [0.0, 6.17125984*1.55, 0.0], #Bottom most Point
+    [-11.1712598, 0.0, 0.0],# Left most Point
+    [11.1712598, 0.0, 0.0], #Right most Point
+    [0.0, -6.17125984, 0.0],# Top most point
+    [0.0, 6.17125984, 0.0], #Bottom most Point
     ]) 
 
 
@@ -118,19 +118,29 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
 #angle 2 is the Yaw of the Robot to the target
 
 def compute_output_values(rvec, tvec):
-    '''Compu    te the necessary output distance and angles'''
+    '''Compute the necessary output distance and angles'''
 
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
-    tilt_angle = math.radians(0)
+    tilt_angle = math.radians(28)
+
+    # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
+    #x = tvec[0][0]
+    #y = tvec[1][0]
+    #z = tvec[2][0]
 
     x = tvec[0][0]
     z = math.sin(tilt_angle) * tvec[1][0] + math.cos(tilt_angle) * tvec[2][0]
+
     print('x:',x)
+    print('y:',y)
     print('z:',z)
 
     # distance in the horizontal plane between camera and target
+    #distance = math.sqrt(x**2 + y**2 + z**2)
     distance = math.sqrt(x**2 + z**2)
+
+    
     # horizontal angle between camera center line and target
     angleInRad = math.atan2(x, z)
     angle1 = math.degrees(angleInRad)
