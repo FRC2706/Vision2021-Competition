@@ -132,9 +132,9 @@ def compute_output_values(rvec, tvec):
     x = tvec[0][0]
     z = math.sin(tilt_angle) * tvec[1][0] + math.cos(tilt_angle) * tvec[2][0]
 
-    print('x:',x)
-    print('y:',y)
-    print('z:',z)
+    #print('x:',x)
+    #print('y:',y)
+    #print('z:',z)
 
     # distance in the horizontal plane between camera and target
     #distance = math.sqrt(x**2 + y**2 + z**2)
@@ -242,7 +242,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                         cx, cy = 0, 0
 
                     #print('centroid = ', cx,cy)
-                    cv2.drawContours(image, [c], -1, (36,145,232), 2)
+                    #cv2.drawContours(image, [c], -1, (36,145,232), 2)
                     centroidDiamonds.append((cx,cy))
 
                 #print('Original Centroid Diamond: ', centroidDiamonds)
@@ -279,13 +279,15 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     displaycorners(image, outer_corners)
                     success, rvec, tvec = findTvecRvec(image, outer_corners, rw_coordinates) 
 
-                    #Calculate the Yaw
-                    M = cv2.moments(cnt)
-                    if M["m00"] != 0:
-                        cx = int(M["m10"] / M["m00"])
-                        cy = int(M["m01"] / M["m00"])
-                    else:
-                        cx, cy = 0, 0
+                    #print('leftmost:',leftmost)
+                    #print('rightmost:',rightmost)
+                    #print('cx:',(leftmost[0]+rightmost[0])/2)
+                    #print('topmost:', topmost)
+                    #print('bottommost:', bottommost)
+                    #print('cy',(topmost[1]+bottommost[1])/2)
+
+                    cx = int((leftmost[0]+rightmost[0])/2)
+                    cy = int((topmost[1]+bottommost[1])/2)
 
                     YawToDiamond = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
                     
