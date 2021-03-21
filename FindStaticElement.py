@@ -32,12 +32,13 @@ real_world_coordinates = np.array([
     ]) 
 
 # temporary testing on half size target
-real_world_coordinates = np.array([
-    [-11.1712598 * distScaleFactor, 0.0, 0.0], # Left most Point
-    [11.1712598 * distScaleFactor, 0.0, 0.0], # Right most Point
-    [0.0, 6.17125984 * distScaleFactor, 0.0], # Top most point
-    [0.0, -6.17125984 * distScaleFactor, 0.0], # Bottom most Point
+real_world_coordinates = np.array([ 
+    [-5.5625*distScaleFactor, 0.0, 0.0], # Left most Point
+    [5.5625*distScaleFactor, 0.0, 0.0], # Right most Point
+    [0.0, 3.0625*distScaleFactor, 0.0], # Top most point
+    [0.0, -3.0625*distScaleFactor, 0.0], # Bottom most Point
     ]) 
+
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
@@ -247,7 +248,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
             # We will work on the filtered contour with the largest area which is the
             # first one in the list
             if (len(cntsFiltered) == 4):
-                print("Length of cntsFiltered:"+str(len(cntsFiltered)))
+                #print("Length of cntsFiltered:"+str(len(cntsFiltered)))
 
                 for c in cntsFiltered:
                     M=cv2.moments(c)
