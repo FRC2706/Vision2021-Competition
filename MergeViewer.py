@@ -67,6 +67,17 @@ frameStop = 0
 ImageCounter = 0
 showAverageFPS = False
 
+def click_and_crop(event, x, y, flags, param):
+    # grab references to the global variables
+    #global image, blueval, greenval, redval
+
+    # if the left mouse button was clicked, record the starting
+    # (x, y) coordinates and indicate that cropping is being
+    # performed
+    if event == cv2.EVENT_LBUTTONDOWN:
+        blueval, greenval, redval = image[y,x]
+        print("blueval=", blueval, " greenval=", greenval, " redval=", redval)
+
 #Code to load images from a folder
 def load_images_from_folder(folder):
     images = []
@@ -192,8 +203,8 @@ while stayInLoop or cap.isOpened():
                 threshold = threshold_video(lower_yellow, upper_yellow, frame)
                 processed = findControlPanel(frame, threshold)
             elif Cone:
-                boxBlur = blurImg(frame, yellow_blur)
-                threshold = threshold_video(lower_orange, upper_orange, boxBlur)
+                #boxBlur = blurImg(frame, yellow_blur)
+                threshold = threshold_video(lower_orange, upper_orange, frame)
                 processed = findConeMarker(frame, threshold, MergeVisionPipeLineTableName)
 
     # end of cycle so update counter

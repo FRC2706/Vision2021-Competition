@@ -25,8 +25,8 @@ horizontalView = math.radians(84.5)
 verticalView = math.radians(69.68)
 
 # MAY CHANGE IN FUTURE YEARS! This is the aspect ratio used in 2020
-image_width = 640 # 4
-image_height = 480 # 3
+#image_width = 640 # 4
+#image_height = 480 # 3
 
 # RL:
 image_width = 320 # 4
@@ -87,7 +87,24 @@ upper_yellow = np.array([30, 255, 255])
 #lower_orange = np.array([1, 130, 170])
 #upper_orange = np.array([18, 255, 255])
 # New range from Jamie
-lower_orange = np.array([1, 190, 130])
-upper_orange = np.array([18, 255, 255])
+#lower_orange = np.array([1, 190, 130])
+#upper_orange = np.array([18, 255, 255])
+# Brian
+#lower_orange = np.array([0, 100, 100])
+#upper_orange = np.array([8, 255, 255])
+# Robert experiment night dining room
+#lower_orange = np.array([1, 150, 150])
+#upper_orange = np.array([4, 255, 255])
+# Robert experiment day dining room
+lower_orange = np.array([0, 140, 180])
+upper_orange = np.array([12, 255, 255])
+# Robert experiment might 2  dining room
+lower_orange = np.array([0, 200, 175])
+upper_orange = np.array([3, 255, 255])
 
 blingColour = 0
+
+# Very simple correction factor used in distance compuation function calculateDistWPILibBall2021 
+# in DistanceFunctions.py. Take a measurement from a known distance and set it equal to measurement
+# divided by known disance. If you don't know what to put, set this to 1.
+DISTANCE_CORRECTION_FACTOR = 3.0/5.0

@@ -36,6 +36,8 @@ def findConeMarkerWithProcessed(frame, processed, mask, MergeVisionPipeLineTable
     else:
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
 
+    print("Number of contours: ", len(contours))
+
     # Take each frame
     # Gets the shape of video
     screenHeight, screenWidth, _ = frame.shape
@@ -64,8 +66,12 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
         cntHeight = 0
         biggestCone = []
         pairOfCones = []
-        for cnt in cntsSorted:
+        for indiv, cnt in enumerate(cntsSorted):
+        #for cnt in cntsSorted:
             x, y, w, h = cv2.boundingRect(cnt)
+
+            if (w > h):
+                w,h = h,w
 
             ##print("Area of bounding rec: " + str(w*h))
             boundingRectArea = w*h
@@ -73,20 +79,24 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             # Calculate Contour area
             cntArea = cv2.contourArea(cnt)
             ##print("Area of contour: " + str(cntArea))
+            #print("indiv=", indiv, " boundingRectArea=", boundingRectArea, " cntArea=", cntArea)
+
+            if (cntArea < 3):
+                continue
 
             #percentage of contour in bounding rect
-            boundingRectContArea = float(cntArea/boundingRectArea)
-            #print("Percentage contour area in bounding rect: " + str(boundingRectContArea))
+            boundingExtent = float(cntArea/boundingRectArea)
+            #print("Percentage contour area in bounding rect: " + str(boundingExtent))
             #cntHeight = h
             #find the height of the bottom (y position of contour)
             # which is just the y value plus the height
             bottomHeight = y+h
             #aspect_ratio = float(w) / h
-            # Get moments of contour; mainly for centroid
+            # Get moments of contour, mainly for centroid
             M = cv2.moments(cnt)
 
             # Filters contours based off of size
-            if (checkCone(cntArea, image_width, boundingRectContArea)):
+            if (checkCone(cntArea, image_width, boundingExtent)):
                 ### MOSTLY DRAWING CODE, BUT CALCULATES IMPORTANT INFO ###
                 # Gets the centeroids of contour
                 if M["m00"] != 0:
@@ -94,7 +104,7 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                     cy = int(M["m01"] / M["m00"])
                 else:
                     cx, cy = 0, 0
-                if (len(biggestCone) < 3):
+                if (len(cntsSorted) > 0):
 
                     ##### DRAWS CONTOUR######
                     # Gets rotated bounding rectangle of contour
@@ -117,7 +127,8 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                    
                     # Appends important info to array
                     if [cx, cy, cnt, bottomHeight] not in biggestCone:
-                        biggestCone.append([cx, cy, cnt, bottomHeight])
+                        #biggestCone.append([cx, cy, cnt, bottomHeight])
+                        biggestCone.append([cx, cy, cnt, h])
                         pairOfCones.append(cnt)
 
         # Check if there are PowerCell seen
@@ -126,7 +137,7 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             tallestCone = biggestCone
 
             # Sorts targets based on tallest height (bottom of contour to top of screen or y position)
-            tallestCone.sort(key=lambda height: math.fabs(height[3]))
+            tallestCone.sort(key=lambda height: math.fabs(height[3]), reverse=True)
 
             # Sorts targets based on area  for end of trench situation, calculates average yaw (RL)
             pairOfCones = sorted(pairOfCones, key=lambda x: cv2.contourArea(x), reverse=True)[:2]
@@ -141,34 +152,37 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             #sorts closestCone - contains center-x, center-y, contour and contour height from the
             #bounding rectangle.  The closest one has the largest bottom point
             
-            closestConeList = sorted(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
-            closestCone = min(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
-            if len(closestConeList) > 1: 
-                closestCone2 = closestConeList[1];
+            #tallestCone = sorted(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
+            #closestCone = min(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
+            #if len(tallestCone) > 1: 
+            #    closestCone2 = tallestCone[1]
 
             # RL: Do calculations depending on whether there are one or two cones
 
-            yaw1 = -99.0;
-            d1 = -99.0;
-            yawMid = -99.0;
-            dMid = -99.0;
-            phiMid = -99.0;
+            yaw1 = -99.0
+            d1 = -99.0
+            yawMid = -99.0
+            dMid = -99.0
+            phiMid = -99.0
 
-            if len(closestConeList) >= 1:
-                cone1 = closestConeList[0];
-                topmost1 = tuple(cone1[2][cone1[2][:,:,1].argmin()][0])
-                cv2.circle(image, topmost1, 6, white, -1)
-                xCoord1 = topmost1[0];
+            if len(tallestCone) >= 1:
+                cone1 = tallestCone[0]
+                #topmost1 = tuple(cone1[2][cone1[2][:,:,1].argmin()][0])
+                cv2.circle(image, (cone1[0], cone1[1]), 6, white, -1)
+                xCoord1 = cone1[0]
                 yaw1 = calculateYaw(xCoord1, centerX, H_FOCAL_LENGTH)
-                d1 = calculateDistWPILibRyan(cone1[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
+                #d1 = calculateDistWPILibRyan(cone1[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
+                d1 = calculateDistWPILibBall2021(cone1[3], TARGET_CONE_HEIGHT, tanVAConeDistance)
 
-            if len(closestConeList) >= 2:
-                cone2 = closestConeList[1];
-                topmost2 = tuple(cone2[2][cone2[2][:,:,1].argmin()][0])
-                cv2.circle(image, topmost2, 6, white, -1)
-                xCoord2 = topmost2[0];
+            if len(tallestCone) >= 2:
+                cone2 = tallestCone[1]
+                #topmost2 = tuple(cone2[2][cone2[2][:,:,1].argmin()][0])
+                cv2.circle(image, (cone2[0], cone2[1]), 6, white, -1)
+                xCoord2 = cone2[0]
                 yaw2 = calculateYaw(xCoord2, centerX, H_FOCAL_LENGTH)
-                d2 = calculateDistWPILibRyan(cone2[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
+                #d2 = calculateDistWPILibRyan(cone2[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
+                d2 = calculateDistWPILibBall2021(cone2[3], TARGET_CONE_HEIGHT, tanVAConeDistance)
+
 
                 yaw1Rad = math.radians(yaw1)
                 yaw2Rad = math.radians(yaw2)
@@ -203,6 +217,8 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 yawMid = math.degrees(yawMidRad)
                 xCoordMid = 160 + round(160 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
 
+            print("d1=", d1, "  dMid=", dMid)
+
             # Print results on screen
             # Draws line where center of target is
             yawMidDisp = round(yawMid*1000)/1000
@@ -211,10 +227,10 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             dSingleDisp = round(d1*100)/100            
             phiMidDisp = round(phiMid*1000)/1000
 
-            if len(closestConeList) >= 1:
+            if len(tallestCone) >= 1:
                 xCoordSingleDisp = xCoord1
                 cv2.line(image, (xCoordSingleDisp, screenHeight), (xCoordSingleDisp, 0), blue, 2)
-            if len(closestConeList) >= 2:
+            if len(tallestCone) >= 2:
                 xCoordMidDisp = xCoordMid
                 cv2.line(image, (xCoordMidDisp, screenHeight), (xCoordMidDisp, 0), red, 2)
 
@@ -234,15 +250,25 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
         return image
 
 # Checks if cone contours are worthy based off of contour area and (not currently) hull area
-def checkCone(cntArea, image_width,boundingRectContArea):
+def checkCone(cntArea, image_width,boundingExtent):
     #this checks that the area of the contour is greater than the image width divide by 2
     #It also checks the percentage of the area of the bounding rectangle is
     #greater than 30%.  A single cone is usually 70-80% while groups of cones are usually
     #above 44% so using 30% is conservative
     #print("cntArea " + str(cntArea))
-    #return (cntArea > (image_width*2)) and (boundingRectContArea > 0.30)
+    #return (cntArea > (image_width*2)) and (boundingExtent > 0.30)
     #return (True)
-    return (cntArea > 20)
+    #return (cntArea > 20)
+
+    #print ("boundingExtent=", boundingExtent, " cntArea=", cntArea)
+    #if ((boundingExtent < 0.4) or (cntArea < 35)):
+    if ((boundingExtent < 0.35) or (cntArea < 70)):
+        #print("Tossed")
+        return False
+    else:
+        #print("Ok")
+        return True
+    #return (cntArea > 300)
 
 if __name__ == "__main__":
 
