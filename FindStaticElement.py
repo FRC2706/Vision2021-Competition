@@ -15,7 +15,7 @@ try:
 except ImportError:
     from NetworkTablePublisher import *
 
-distScaleFactor = 1.50
+distScaleFactor = 1.55
 
 #real_world_coordinates = np.array([
 #    [0.0, -6.17125984*1.5, 0.0],# Top most point
@@ -169,6 +169,17 @@ def compute_output_values(rvec, tvec):
     angle2InRad = math.atan2(pzero_world[0][0], pzero_world[2][0])
     angle2 = math.degrees(angle2InRad)
 
+    if angle2 < 0.0 and angle2 >= -90.0:
+        angle2 = 90.0 + angle2
+    elif angle2 == 90.0:
+        angle2 = 0.0
+    elif angle2 > 0.0 and angle2 <= 90:
+        angle2 = 90 - angle2
+    else:
+        print('why is angle2 greater than abs(90)', angle2)
+
+    print('angle2', angle2, '\n')
+
     return distanceo, angle1o, angle2
 
 #Simple function that displays 4 corners on an image
@@ -205,7 +216,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
     diamonds = []
     # Constant used as minimum area for fingerprinting is equal to 60% of screenWidth. (Using 
     # a value based on screenWidth scales properly if the resolution ever changes.)
-    minContourArea = 0.6 * screenWidth;
+    minContourArea = 0.6 * screenWidth
 
     if len(contours) >= 1:
         # Sort contours by area size (biggest to smallest)
