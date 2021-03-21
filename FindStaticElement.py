@@ -180,6 +180,20 @@ def compute_output_values(rvec, tvec):
 
     print('angle2', angle2, '\n')
 
+    #Test LC Method for Yaw
+    #https://github.com/mpatacchiola/deepgaze/issues/3
+    #rvec_matrix = cv2.Rodrigues(rvec)[0]
+    #proj_matrix = np.hstack((rvec_matrix, tvec))
+    #eulerAngles = -cv2.decomposeProjectionMatrix(proj_matrix)[6] 
+    #yaw   = eulerAngles[1]
+    #pitch = eulerAngles[0]
+    #roll  = eulerAngles[2]
+    #if pitch > 0:
+    #    pitch = 180 - pitch
+    #elif pitch < 0:
+    #    pitch = -180 - pitch
+    #yaw = -yaw 
+
     return distance, distanceo, angle1o, angle2
 
 #Simple function that displays 4 corners on an image
