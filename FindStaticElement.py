@@ -15,8 +15,6 @@ try:
 except ImportError:
     from NetworkTablePublisher import *
 
-distScaleFactor = 1.55
-
 #real_world_coordinates = np.array([
 #    [0.0, -6.17125984*1.5, 0.0],# Top most point
 #    [-11.1712598*1.5, 0.0, 0.0],# Left most Point
@@ -115,6 +113,7 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
  
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
     (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
+    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)
  
     #print ("Rotation Vector:\n {0}".format(rotation_vector))
     #print ("Translation Vector:\n {0}".format(translation_vector))
@@ -133,6 +132,7 @@ def compute_output_values(rvec, tvec):
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
     tilt_angle = math.radians(0)
+    distScaleFactor = 1.55
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
     xo = tvec[0][0]
@@ -149,8 +149,8 @@ def compute_output_values(rvec, tvec):
     print('z:',z, zo)
 
     # distance in the horizontal plane between camera and target
-    distanceo = math.sqrt(xo**2 + yo**2 + zo**2)
-    distance = math.sqrt(x**2 + z**2)
+    distanceo = math.sqrt(xo**2 + yo**2 + zo**2) * distScaleFactor
+    distance = math.sqrt(x**2 + z**2) * distScaleFactor
 
     print('distance:', distance, distanceo)
 
