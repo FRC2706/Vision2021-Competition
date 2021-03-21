@@ -23,18 +23,18 @@ except ImportError:
 #    ])
 
 real_world_coordinates = np.array([
-    [-11.1712598 * distScaleFactor, 0.0, 0.0], # Left most Point
-    [11.1712598 * distScaleFactor, 0.0, 0.0], # Right most Point
-    [0.0, 6.17125984 * distScaleFactor, 0.0], # Top most point
-    [0.0, -6.17125984 * distScaleFactor, 0.0], # Bottom most Point
+    [-11.1712598, 0.0, 0.0], # Left most Point
+    [11.1712598, 0.0, 0.0], # Right most Point
+    [0.0, 6.17125984, 0.0], # Top most point
+    [0.0, -6.17125984, 0.0], # Bottom most Point
     ]) 
 
 # temporary testing on half size target
 real_world_coordinates = np.array([ 
-    [-5.5625*distScaleFactor, 0.0, 0.0], # Left most Point
-    [5.5625*distScaleFactor, 0.0, 0.0], # Right most Point
-    [0.0, 3.0625*distScaleFactor, 0.0], # Top most point
-    [0.0, -3.0625*distScaleFactor, 0.0], # Bottom most Point
+    [-5.5625, 0.0, 0.0], # Left most Point
+    [5.5625, 0.0, 0.0], # Right most Point
+    [0.0, 3.0625, 0.0], # Top most point
+    [0.0, -3.0625, 0.0], # Bottom most Point
     ]) 
 
 
