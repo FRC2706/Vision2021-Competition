@@ -15,6 +15,7 @@ try:
 except ImportError:
     from NetworkTablePublisher import *
 
+distScaleFactor = 1.50
 
 #real_world_coordinates = np.array([
 #    [0.0, -6.17125984*1.5, 0.0],# Top most point
@@ -24,12 +25,19 @@ except ImportError:
 #    ])
 
 real_world_coordinates = np.array([
-    [-11.1712598, 0.0, 0.0],# Left most Point
-    [11.1712598, 0.0, 0.0], #Right most Point
-    [0.0, -6.17125984, 0.0],# Top most point
-    [0.0, 6.17125984, 0.0], #Bottom most Point
+    [-11.1712598 * distScaleFactor, 0.0, 0.0], # Left most Point
+    [11.1712598 * distScaleFactor, 0.0, 0.0], # Right most Point
+    [0.0, 6.17125984 * distScaleFactor, 0.0], # Top most point
+    [0.0, -6.17125984 * distScaleFactor, 0.0], # Bottom most Point
     ]) 
 
+# temporary testing on half size target
+real_world_coordinates = np.array([
+    [-11.1712598 * distScaleFactor, 0.0, 0.0], # Left most Point
+    [11.1712598 * distScaleFactor, 0.0, 0.0], # Right most Point
+    [0.0, 6.17125984 * distScaleFactor, 0.0], # Top most point
+    [0.0, -6.17125984 * distScaleFactor, 0.0], # Bottom most Point
+    ]) 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
@@ -74,12 +82,12 @@ def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTabl
 
 def findTvecRvec(image, outer_corners, real_world_coordinates):
     # Read Image
-    size = image.shape
+    #size = image.shape
  
     # Camera internals
  
-    focal_length = size[1]
-    center = (size[1]/2, size[0]/2)
+    #focal_length = size[1]
+    #center = (size[1]/2, size[0]/2)
     # camera_matrix = np.array(
     #                      [[H_FOCAL_LENGTH, 0, center[0]],
     #                      [0, V_FOCAL_LENGTH, center[1]],
@@ -101,6 +109,7 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     dist_coeffs = np.array([
         [1.5298022258256136, -17.6800174425778, 0.05117671205418792, -0.04020311562261712, 44.20234463669946]
         ], dtype = 'double')
+
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
  
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
@@ -122,28 +131,35 @@ def compute_output_values(rvec, tvec):
 
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
-    tilt_angle = math.radians(28)
+    tilt_angle = math.radians(0)
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
-    #x = tvec[0][0]
-    #y = tvec[1][0]
-    #z = tvec[2][0]
+    xo = tvec[0][0]
+    yo = tvec[1][0]
+    zo = tvec[2][0]
 
+    # Merge code last year
     x = tvec[0][0]
     z = math.sin(tilt_angle) * tvec[1][0] + math.cos(tilt_angle) * tvec[2][0]
 
-    #print('x:',x)
-    #print('y:',y)
-    #print('z:',z)
+    print('x:',x, xo)
+    print('y:',y, yo)
+    print('z:',z, zo)
 
     # distance in the horizontal plane between camera and target
-    #distance = math.sqrt(x**2 + y**2 + z**2)
+    distanceo = math.sqrt(xo**2 + yo**2 + zo**2)
     distance = math.sqrt(x**2 + z**2)
 
-    
+    print('distance:', distance, distanceo)
+
     # horizontal angle between camera center line and target
-    angleInRad = math.atan2(x, z)
-    angle1 = math.degrees(angleInRad)
+    angle1InRad = math.atan2(x, z)
+    angle1InRado = math.atan2(xo, zo)
+
+    angle1 = math.degrees(angle1InRad)
+    angle1o = math.degrees(angle1InRado)
+
+    print('angle1', angle1, angle1o)
 
     rot, _ = cv2.Rodrigues(rvec)
     rot_inv = rot.transpose()
@@ -151,7 +167,7 @@ def compute_output_values(rvec, tvec):
     angle2InRad = math.atan2(pzero_world[0][0], pzero_world[2][0])
     angle2 = math.degrees(angle2InRad)
 
-    return distance, angle1, angle2
+    return distanceo, angle1o, angle2
 
 #Simple function that displays 4 corners on an image
 #A np.array() is expected as the input argument
