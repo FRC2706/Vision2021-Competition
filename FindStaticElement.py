@@ -141,7 +141,8 @@ def compute_output_values(rvec, tvec):
 
     # Merge code last year
     x = tvec[0][0]
-    z = math.sin(tilt_angle) * tvec[1][0] + math.cos(tilt_angle) * tvec[2][0]
+    y = tvec[1][0]
+    z = math.sin(tilt_angle) * y + math.cos(tilt_angle) * tvec[2][0]
 
     print('x:',x, xo)
     print('y:',y, yo)
