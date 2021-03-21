@@ -180,7 +180,7 @@ def compute_output_values(rvec, tvec):
 
     print('angle2', angle2, '\n')
 
-    return distanceo, angle1o, angle2
+    return distance, distanceo, angle1o, angle2
 
 #Simple function that displays 4 corners on an image
 #A np.array() is expected as the input argument
@@ -323,8 +323,11 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     # If success then print values to screen                               
                     if success:
 
-                        distance, angle1, angle2 = compute_output_values(rvec, tvec)
-
+                        distance, distanceo, angle1, angle2 = compute_output_values(rvec, tvec)
+                        cv2.putText(image, "ComputeAngle1: " + str(angle1), (40, 140), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
+                        cv2.putText(image, "ComputeAngle2: " + str(angle2), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
+                        cv2.putText(image, "Distance: " + str(distance), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
+                        cv2.putText(image, "Distanceo: " + str(distanceo), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
                         #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
                         RobotYawToDiamond = 180-abs(angle2)
                         cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
