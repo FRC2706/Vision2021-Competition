@@ -564,8 +564,8 @@ if __name__ == "__main__":
             start = milliSince1970()
 
         # because we are timing in this file, have to add the fps to image processed 
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/displayFPS), (200, 40), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
-        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (220, 80), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/displayFPS), (20, 40), cv2.FONT_HERSHEY_COMPLEX, 0.5, white)
+        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (20, 60), cv2.FONT_HERSHEY_COMPLEX, 0.5, white)
 
         # networkTable.putBoolean("Driver", True)
         processed = cv2.resize(processed,(320,240),fx=0,fy=0,interpolation=cv2.INTER_CUBIC)

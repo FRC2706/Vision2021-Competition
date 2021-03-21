@@ -87,11 +87,8 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             #percentage of contour in bounding rect
             boundingExtent = float(cntArea/boundingRectArea)
             #print("Percentage contour area in bounding rect: " + str(boundingExtent))
-            #cntHeight = h
-            #find the height of the bottom (y position of contour)
-            # which is just the y value plus the height
             bottomHeight = y+h
-            #aspect_ratio = float(w) / h
+
             # Get moments of contour, mainly for centroid
             M = cv2.moments(cnt)
 
@@ -106,14 +103,7 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                     cx, cy = 0, 0
                 if (len(cntsSorted) > 0):
 
-                    ##### DRAWS CONTOUR######
-                    # Gets rotated bounding rectangle of contour
-                    #rect = cv2.minAreaRect(cnt)
-                    # Creates box around that rectangle
-                    #box = cv2.boxPoints(rect)
-                    # Covert boxpoints to integer
-                    #box = np.int0(box)
-                   
+                    ##### DRAWS CONTOUR######                   
                     # Draws a vertical white line passing through center of contour
                     cv2.line(image, (cx, screenHeight), (cx, 0), white)
                     # Draws a white circle at center of contour
@@ -127,7 +117,6 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                    
                     # Appends important info to array
                     if [cx, cy, cnt, bottomHeight] not in biggestCone:
-                        #biggestCone.append([cx, cy, cnt, bottomHeight])
                         biggestCone.append([cx, cy, cnt, h])
                         pairOfCones.append(cnt)
 
@@ -140,24 +129,16 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             tallestCone.sort(key=lambda height: math.fabs(height[3]), reverse=True)
 
             # Sorts targets based on area  for end of trench situation, calculates average yaw (RL)
-            pairOfCones = sorted(pairOfCones, key=lambda x: cv2.contourArea(x), reverse=True)[:2]
-            if len(pairOfCones) >= 2:
-                M0 = cv2.moments(pairOfCones[0])
-                M1 = cv2.moments(pairOfCones[1])
-                if M0["m00"] != 0 and M1["m00"] != 0:
-                    cx0 = int(M0["m10"] / M0["m00"])
-                    cx1 = int(M1["m10"] / M1["m00"])    
-                    avecxof2 = int((cx0+cx1)/2.0)
+            #pairOfCones = sorted(pairOfCones, key=lambda x: cv2.contourArea(x), reverse=True)[:2]
+            #if len(pairOfCones) >= 2:
+            #    M0 = cv2.moments(pairOfCones[0])
+            #    M1 = cv2.moments(pairOfCones[1])
+            #    if M0["m00"] != 0 and M1["m00"] != 0:
+            #        cx0 = int(M0["m10"] / M0["m00"])
+            #        cx1 = int(M1["m10"] / M1["m00"])    
+            #        avecxof2 = int((cx0+cx1)/2.0)
 
-            #sorts closestCone - contains center-x, center-y, contour and contour height from the
-            #bounding rectangle.  The closest one has the largest bottom point
-            
-            #tallestCone = sorted(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
-            #closestCone = min(tallestCone, key=lambda height: (math.fabs(height[3] - centerX)))
-            #if len(tallestCone) > 1: 
-            #    closestCone2 = tallestCone[1]
-
-            # RL: Do calculations depending on whether there are one or two cones
+            # Do calculations depending on whether there are one or two cones
 
             yaw1 = -99.0
             d1 = -99.0
@@ -167,22 +148,17 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             if len(tallestCone) >= 1:
                 cone1 = tallestCone[0]
-                #topmost1 = tuple(cone1[2][cone1[2][:,:,1].argmin()][0])
                 cv2.circle(image, (cone1[0], cone1[1]), 6, white, -1)
                 xCoord1 = cone1[0]
                 yaw1 = calculateYaw(xCoord1, centerX, H_FOCAL_LENGTH)
-                #d1 = calculateDistWPILibRyan(cone1[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
                 d1 = calculateDistWPILibBall2021(cone1[3], TARGET_CONE_HEIGHT, tanVAConeDistance)
 
             if len(tallestCone) >= 2:
                 cone2 = tallestCone[1]
-                #topmost2 = tuple(cone2[2][cone2[2][:,:,1].argmin()][0])
                 cv2.circle(image, (cone2[0], cone2[1]), 6, white, -1)
                 xCoord2 = cone2[0]
                 yaw2 = calculateYaw(xCoord2, centerX, H_FOCAL_LENGTH)
-                #d2 = calculateDistWPILibRyan(cone2[3],TARGET_CONE_HEIGHT,KNOWN_CONE_PIXEL_HEIGHT,KNOWN_CONE_DISTANCE )
                 d2 = calculateDistWPILibBall2021(cone2[3], TARGET_CONE_HEIGHT, tanVAConeDistance)
-
 
                 yaw1Rad = math.radians(yaw1)
                 yaw2Rad = math.radians(yaw2)
@@ -215,17 +191,18 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 dMid = math.sqrt(wx*wx + wy*wy)
                 yawMidRad = math.atan(wx/wy)
                 yawMid = math.degrees(yawMidRad)
-                xCoordMid = 160 + round(160 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
+                screenWidth_div_2 = round(screenWidth / 2)
+                xCoordMid = screenWidth_div_2 + round(screenWidth_div_2 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
 
             print("d1=", d1, "  dMid=", dMid)
 
             # Print results on screen
             # Draws line where center of target is
-            yawMidDisp = round(yawMid*1000)/1000
-            dMidDisp = round(dMid*100)/100
-            yawSingleDisp = round(yaw1*1000)/1000
-            dSingleDisp = round(d1*100)/100            
-            phiMidDisp = round(phiMid*1000)/1000
+            yawMidDisp = round(yawMid)
+            dMidDisp = round(dMid, 1)
+            yawSingleDisp = round(yaw1)
+            dSingleDisp = round(d1, 1)          
+            phiMidDisp = round(phiMid)
 
             if len(tallestCone) >= 1:
                 xCoordSingleDisp = xCoord1
@@ -234,11 +211,11 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 xCoordMidDisp = xCoordMid
                 cv2.line(image, (xCoordMidDisp, screenHeight), (xCoordMidDisp, 0), red, 2)
 
-            cv2.putText(image, "Yaw Single: " + str(yawSingleDisp), (40, 160), cv2.FONT_HERSHEY_COMPLEX, .4, white)
-            cv2.putText(image, "Dist Single: " + str(dSingleDisp), (40, 180), cv2.FONT_HERSHEY_COMPLEX, .4, white)
-            cv2.putText(image, "Yaw Mid: " + str(yawMidDisp), (180, 160), cv2.FONT_HERSHEY_COMPLEX, .4, white)
-            cv2.putText(image, "Dist Mid: " + str(dMidDisp), (180, 180), cv2.FONT_HERSHEY_COMPLEX, .4, white)
-            cv2.putText(image, "Phi Mid: " + str(phiMidDisp), (180, 200), cv2.FONT_HERSHEY_COMPLEX, .4, white)
+            cv2.putText(image, "Yaw Single: " + str(yawSingleDisp), (20, 160), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Dist Single: " + str(dSingleDisp), (20, 180), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Yaw Mid: " + str(yawMidDisp), (180, 160), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Dist Mid: " + str(dMidDisp), (180, 180), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Phi Mid: " + str(phiMidDisp), (180, 200), cv2.FONT_HERSHEY_COMPLEX, .5, white)
 
             # pushes cone angle to network tables
             publishNumber(MergeVisionPipeLineTableName, "YawToSingleCone", yaw1)
