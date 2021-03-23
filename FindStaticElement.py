@@ -22,6 +22,7 @@ except ImportError:
 #    [11.1712598*1.5, 0.0, 0.0], #Right most Point
 #    ])
 
+# these are for the Sketchup targets and proposed full sized target
 real_world_coordinates = np.array([
     [-11.1712598, 0.0, 0.0], # Left most Point
     [11.1712598, 0.0, 0.0], # Right most Point
@@ -29,21 +30,41 @@ real_world_coordinates = np.array([
     [0.0, -6.17125984, 0.0], # Bottom most Point
     ]) 
 
-# temporary testing on half size target
+# these are for testing and in the x folder
+
+#-C -> a squished diamond defined by four squares
 real_world_coordinates = np.array([ 
-    [-5.5625, 0.0, 0.0], # Left most Point
-    [5.5625, 0.0, 0.0], # Right most Point
-    [0.0, 3.0625, 0.0], # Top most point
-    [0.0, -3.0625, 0.0], # Bottom most Point
+    [-5.5625, 3.0, 0.0], # Left most Point
+    [5.5625, 3.0, 0.0], # Right most Point
+    [0.0, 0.0, 0.0], # Top most point
+    [0.0, 6.125, 0.0], # Bottom most Point
     ]) 
 
-# temporary testing on half size target
-#real_world_coordinates = np.array([ 
-#    [-5.5625, 0.0, 0.0], # Left most Point
-#    [2.375, -6.125, 0.0], # Right most Point
-#    [0.0, 0.0, 0.0], # Top most point
-#    [-2.375, -6.125, 0.0], # Bottom most Point
-#    ]) 
+#-D -> drop a corner from the W rather than the center
+real_world_coordinates = np.array([ 
+    [-5.5625, 0.0, 0.0], # Upper left point
+    [0.0, 0.0, 0.0], # Upper center point
+    [-2.5, 6.125, 0.0], # Bottom left point
+    [2.5, 6.125, 0.0], # Bottom right point
+    ])
+
+#-A -> an M as in Merge
+real_world_coordinates = np.array([ 
+    [-2.5, 0.0, 0.0], # Upper left point
+    [2.5, 0.0, 0.0], # Upper right point
+    [-5.5625, 6.125, 0.0], # Bottom left point
+    #[0.0, 6.125, 0.0], # Bottom center point
+    [5.5625, 6.125, 0.0], # Bottom right point
+    ])
+
+#-B -> the above target upside down, a W, drop upper center for four
+real_world_coordinates = np.array([ 
+    [-5.5625, 0.0, 0.0], # Upper left point
+    #[0.0, 0.0, 0.0], # Upper center point
+    [5.5625, 0.0, 0.0], # Upper right point
+    [-2.5, 6.125, 0.0], # Bottom left point
+    [2.5, 6.125, 0.0], # Bottom right point
+    ])
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
@@ -84,8 +105,6 @@ def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTabl
     # Shows the contours overlayed on the original video
     return image
 
-
-
 def findTvecRvec(image, outer_corners, real_world_coordinates):
     # Read Image
     #size = image.shape
@@ -94,34 +113,35 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
  
     #focal_length = size[1]
     #center = (size[1]/2, size[0]/2)
-    # camera_matrix = np.array(
-    #                      [[H_FOCAL_LENGTH, 0, center[0]],
-    #                      [0, V_FOCAL_LENGTH, center[1]],
-    #                      [0, 0, 1]], dtype = "double"
-    #                      )
+    #camera_matrix = np.array(
+    #                    [[H_FOCAL_LENGTH, 0, center[0]],
+    #                    [0, V_FOCAL_LENGTH, center[1]],
+    #                    [0, 0, 1]], dtype = "double"
+    #                    )
 
-    #dist_coeffs = np.array([[0.16171335604097975, -0.9962921370737408, -4.145368586842373e-05, 
-    #                         0.0015152030328047668, 1.230483016701437]])
+    camera_matrix = np.array([[676.9254672222575, 0.0, 303.8922263320326], 
+                              [0.0, 677.958895098853, 226.64055316186037], 
+                              [0.0, 0.0, 1.0]], dtype = "double")
+    
+    dist_coeffs = np.array([[0.16171335604097975, -0.9962921370737408, -4.145368586842373e-05, 
+                             0.0015152030328047668, 1.230483016701437]])
 
-    #camera_matrix = np.array([[676.9254672222575, 0.0, 303.8922263320326], 
-    #                          [0.0, 677.958895098853, 226.64055316186037], 
-    #                          [0.0, 0.0, 1.0]], dtype = "double")
-    camera_matrix = np.array([
-        [272.36049320004605, 0.0, 157.62816826544375], 
-        [0.0, 257.46612122321454, 98.90302088583047],
-        [0.0, 0.0, 1.0]
-        ], dtype = 'double')
+    #camera_matrix = np.array([
+    #    [272.36049320004605, 0.0, 157.62816826544375], 
+    #    [0.0, 257.46612122321454, 98.90302088583047],
+    #    [0.0, 0.0, 1.0]
+    #    ], dtype = 'double')
 
-    dist_coeffs = np.array([
-        [1.5298022258256136, -17.6800174425778, 0.05117671205418792, -0.04020311562261712, 44.20234463669946]
-        ], dtype = 'double')
+    #dist_coeffs = np.array([
+    #    [1.5298022258256136, -17.6800174425778, 0.05117671205418792, -0.04020311562261712, 44.20234463669946]
+    #    ], dtype = 'double')
 
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
  
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
     #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
-    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)
-    (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
+    (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)
+    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
     #success, rvec, tvec = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, rvec, tvec, flags=cv2.SOLVEPNP_ITERATIVE)
 
 
@@ -141,8 +161,8 @@ def compute_output_values(rvec, tvec):
 
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
-    tilt_angle = math.radians(0)
-    distScaleFactor = 2.5
+    tilt_angle = math.radians(26.18)
+    distScaleFactor = 1.028
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
     xo = tvec[0][0]
@@ -180,7 +200,13 @@ def compute_output_values(rvec, tvec):
     angle2InDegrees = math.degrees(angle2InRad)
 
     #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
-    angle2 = 180-abs(angle2InDegrees)
+    print('raw angle2 in degrees', angle2InDegrees)
+    
+    if angle2InDegrees < 0:
+        angle2 = 180 + angle2InDegrees
+    else:
+        angle2 = -(180 - angle2InDegrees)
+    #angle2 = 180-abs(angle2InDegrees)
     print('angle2', angle2)
 
     #Test LC Method for Yaw
@@ -253,7 +279,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
     if len(contours) >= 1:
         # Sort contours by area size (biggest to smallest)
-        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:4] # 4 is a cheat
+        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:5] # 4 is a cheat
     
         cntsFiltered = []
         centroidDiamonds = []
@@ -292,7 +318,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
             # We will work on the filtered contour with the largest area which is the
             # first one in the list
-            if (len(cntsFiltered) == 4):
+            if (len(cntsFiltered) >= 4):
                 #print("Length of cntsFiltered:"+str(len(cntsFiltered)))
 
                 for c in cntsFiltered:
@@ -304,7 +330,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                         cx, cy = 0, 0
 
                     #print('centroid = ', cx,cy)
-                    #cv2.drawContours(image, [c], -1, (36,145,232), 2)
+                    cv2.drawContours(image, [c], -1, (36,145,232), 2)
                     centroidDiamonds.append((cx,cy))
 
                 #print('Original Centroid Diamond: ', centroidDiamonds)
@@ -312,13 +338,14 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                 #print('Centroid Diamonds sorted by x: ', centroidDiamonds)
 
                 leftmost = centroidDiamonds[0]
-                rightmost = centroidDiamonds[3]
+                rightmost = centroidDiamonds[4]
 
                 #centroidDiamonds.sort(key = operator.itemgetter(1))
                 #print('Centroid DIamonds sorted by y: ', centroidDiamonds)
 
-                bottommost = centroidDiamonds[1]
-                topmost = centroidDiamonds[2]
+                leftother = centroidDiamonds[1]
+                centerother = centroidDiamonds[2]
+                rightother = centroidDiamonds[3]
 
                 #print('leftmost: ', leftmost)
                 #print('rightmost: ', rightmost)
@@ -333,8 +360,8 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                 outer_corners = np.array([
                                             leftmost,
                                             rightmost,
-                                            topmost,
-                                            bottommost
+                                            leftother,
+                                            rightother
                                         ], dtype="double") 
 
                 if (foundCorners):
@@ -348,8 +375,8 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     #print('bottommost:', bottommost)
                     #print('cy',(topmost[1]+bottommost[1])/2)
 
-                    cx = int((leftmost[0]+rightmost[0])/2)
-                    cy = int((topmost[1]+bottommost[1])/2)
+                    cx = int(centroidDiamonds[2][0])
+                    cy = int(centroidDiamonds[2][1])
 
                     YawToDiamond = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
                                         
@@ -359,8 +386,8 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
                         cv2.putText(image, "ComputeAngle1: " + str(angle1), (40, 140), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
                         cv2.putText(image, "ComputeAngle2: " + str(angle2), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
-                        cv2.putText(image, "Distance: " + str(distance), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
-                        cv2.putText(image, "Distanceo: " + str(distanceo), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
+                        cv2.putText(image, "Distance: " + str(distance/12), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
+                        cv2.putText(image, "Distanceo: " + str(distanceo/12), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
                         cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
                         cv2.putText(image, "Distance: " + str(round((distance/12),2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
                         #cv2.putText(image, "RobotYawToDiamond: " + str(round(RobotYawToDiamond,2)), (40, 420), cv2.FONT_HERSHEY_COMPLEX, .6,white)
@@ -451,16 +478,19 @@ if __name__ == "__main__":
     imageCounter = 0
 
     # create empty bgr image for the test
-    bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
+    #bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
 
     # draw a green diamond on the test image
-    pts = np.array([[200,60],[250,110],[200,160],[150,110]], np.int32)
-    bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,255,0), -1)
+    #pts = np.array([[200,60],[250,110],[200,160],[150,110]], np.int32)
+    #bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,255,0), -1)
 
-    pts = np.array([[200,80],[230,110],[200,140],[170,110]], np.int32)
-    bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
+    #pts = np.array([[200,80],[230,110],[200,140],[170,110]], np.int32)
+    #bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
 
-    bgrTestImage = cv2.imread('2021-irahFourDTest/centroidYawIssue.jpg')
+    #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4A-04f-left.jpg')
+    bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4B-10f-center.jpg')
+    #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4C-04f-left.jpg')
+    #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4D-04f-left.jpg')
 
     # display the test image to verify it visually
     #cv2.imshow('This is the test image', bgrTestImage)
@@ -469,7 +499,7 @@ if __name__ == "__main__":
     hsvTestImage = cv2.cvtColor(bgrTestImage, cv2.COLOR_BGR2HSV)
 
     # using inrange from opencv make mask
-    mskBinary = cv2.inRange(hsvTestImage,  (0, 100, 100), (65, 255, 255),)
+    mskBinary = cv2.inRange(hsvTestImage,  (65, 50, 50), (95, 255, 255),)
 
     # display the mask to verify it visually
     #cv2.imshow('This is the mask', mskBinary)

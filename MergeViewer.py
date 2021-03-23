@@ -73,7 +73,7 @@ def load_images_from_folder(folder):
     imagename = []
     for filename in sorted(os.listdir(folder)):
         img = cv2.imread(os.path.join(folder,filename))
-        if img is not None:
+        if img is not None and filename[:2] == '4B':
             images.append(img)
             imagename.append(filename)
     return images, imagename
@@ -105,7 +105,7 @@ else:  # implies images are to be read
     #images, imagename = load_images_from_folder("./OuterTargetRingTest")
     #images, imagename = load_images_from_folder("./OuterTargetLiger")
     #images, imagename = load_images_from_folder("./2021-irahTapeTesting")
-    images, imagename = load_images_from_folder("./2021-irahFourDiamonds")
+    images, imagename = load_images_from_folder("./2021-irah4D-51T-16C")
 
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
