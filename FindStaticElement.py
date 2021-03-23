@@ -32,14 +32,6 @@ real_world_coordinates = np.array([
 
 # these are for testing and in the 2021-irah4D-51T-16C folder
 
-#-C -> a squished diamond defined by four squares
-real_world_coordinates = np.array([ 
-    [-5.5625, 3.0, 0.0], # Left most Point
-    [5.5625, 3.0, 0.0], # Right most Point
-    [0.0, 0.0, 0.0], # Top most point
-    [0.0, 6.125, 0.0], # Bottom most Point
-    ]) 
-
 #-D -> drop a corner from the W rather than the center
 real_world_coordinates = np.array([ 
     [-5.5625, 0.0, 0.0], # Upper left point
@@ -64,6 +56,14 @@ real_world_coordinates = np.array([
     #[0.0, 6.125, 0.0], # Bottom center point
     [5.5625, 6.125, 0.0], # Bottom right point
     ])
+
+#-C -> a squished diamond defined by four squares
+real_world_coordinates = np.array([ 
+    [-5.5625, 3.0, 0.0], # Left most Point
+    [5.5625, 3.0, 0.0], # Right most Point
+    [0.0, 0.0, 0.0], # Top most point
+    [0.0, 6.125, 0.0], # Bottom most Point
+    ]) 
 
 #-B -> the above target upside down, a W, drop upper center for four
 real_world_coordinates = np.array([ 
