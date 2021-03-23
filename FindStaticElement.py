@@ -30,7 +30,7 @@ real_world_coordinates = np.array([
     [0.0, -6.17125984, 0.0], # Bottom most Point
     ]) 
 
-# these are for testing and in the x folder
+# these are for testing and in the 2021-irah4D-51T-16C folder
 
 #-C -> a squished diamond defined by four squares
 real_world_coordinates = np.array([ 
@@ -46,6 +46,14 @@ real_world_coordinates = np.array([
     [0.0, 0.0, 0.0], # Upper center point
     [-2.5, 6.125, 0.0], # Bottom left point
     [2.5, 6.125, 0.0], # Bottom right point
+    ])
+
+#-E -> modelled after the power up scale vision target
+real_world_coordinates = np.array([ 
+    [-2.0, 0.0, 0.0], # Upper left point
+    [2.0, 0.0, 0.0], # Upper center point
+    [-2.0, 7.26, 0.0], # Bottom left point
+    [2.0, 7.26, 0.0], # Bottom right point
     ])
 
 #-A -> an M as in Merge
@@ -247,13 +255,13 @@ def displaycorners(image, outer_corners):
     # draw extreme points
     # from https://www.pyimagesearch.com/2016/04/11/finding-extreme-points-in-contours-with-opencv/
     if len(outer_corners) == 4: #this is methods 1 to 4 
-        cv2.circle(image, (int(outer_corners[0,0]),int(outer_corners[0,1])), 6, green, -1)
+        cv2.circle(image, (int(outer_corners[0,0]),int(outer_corners[0,1])), 6, cyan, -1)
         cv2.circle(image, (int(outer_corners[1,0]),int(outer_corners[1,1])), 6, red, -1)
         cv2.circle(image, (int(outer_corners[2,0]),int(outer_corners[2,1])), 6, white,-1)
         cv2.circle(image, (int(outer_corners[3,0]),int(outer_corners[3,1])), 6, blue, -1)
         #print('extreme points', leftmost,rightmost,topmost,bottommost)
     else: # this assumes len is 5 and method 5
-        cv2.circle(image, (int(outer_corners[0,0]),int(outer_corners[0,1])), 6, green, -1)
+        cv2.circle(image, (int(outer_corners[0,0]),int(outer_corners[0,1])), 6, cyan, -1)
         cv2.circle(image, (int(outer_corners[1,0]),int(outer_corners[1,1])), 6, blue, -1)
         cv2.circle(image, (int(outer_corners[2,0]),int(outer_corners[2,1])), 6, purple, -1)
         cv2.circle(image, (int(outer_corners[3,0]),int(outer_corners[3,1])), 6, white,-1)
