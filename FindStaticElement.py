@@ -37,6 +37,13 @@ real_world_coordinates = np.array([
     [0.0, -3.0625, 0.0], # Bottom most Point
     ]) 
 
+# temporary testing on half size target
+real_world_coordinates = np.array([ 
+    [-5.5625, 0.0, 0.0], # Left most Point
+    [2.375, -6.125, 0.0], # Right most Point
+    [0.0, 0.0, 0.0], # Top most point
+    [-2.375, -6.125, 0.0], # Bottom most Point
+    ]) 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
@@ -112,9 +119,12 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
  
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
-    (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
+    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
     #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)
- 
+    (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
+    #success, rvec, tvec = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, rvec, tvec, flags=cv2.SOLVEPNP_ITERATIVE)
+
+
     #print ("Rotation Vector:\n {0}".format(rotation_vector))
     #print ("Translation Vector:\n {0}".format(translation_vector))
     #print ('outer_corners:',outer_corners)
@@ -132,7 +142,7 @@ def compute_output_values(rvec, tvec):
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
     tilt_angle = math.radians(0)
-    distScaleFactor = 1.55
+    distScaleFactor = 2.5
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
     xo = tvec[0][0]
@@ -167,32 +177,41 @@ def compute_output_values(rvec, tvec):
     rot_inv = rot.transpose()
     pzero_world = np.matmul(rot_inv, -tvec)
     angle2InRad = math.atan2(pzero_world[0][0], pzero_world[2][0])
-    angle2 = math.degrees(angle2InRad)
+    angle2InDegrees = math.degrees(angle2InRad)
 
-    if angle2 < 0.0 and angle2 >= -90.0:
-        angle2 = 90.0 + angle2
-    elif angle2 == 90.0:
-        angle2 = 0.0
-    elif angle2 > 0.0 and angle2 <= 90:
-        angle2 = 90 - angle2
-    else:
-        print('why is angle2 greater than abs(90)', angle2)
-
-    print('angle2', angle2, '\n')
+    #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
+    angle2 = 180-abs(angle2InDegrees)
+    print('angle2', angle2)
 
     #Test LC Method for Yaw
     #https://github.com/mpatacchiola/deepgaze/issues/3
-    #rvec_matrix = cv2.Rodrigues(rvec)[0]
-    #proj_matrix = np.hstack((rvec_matrix, tvec))
-    #eulerAngles = -cv2.decomposeProjectionMatrix(proj_matrix)[6] 
-    #yaw   = eulerAngles[1]
-    #pitch = eulerAngles[0]
-    #roll  = eulerAngles[2]
-    #if pitch > 0:
-    #    pitch = 180 - pitch
-    #elif pitch < 0:
-    #    pitch = -180 - pitch
-    #yaw = -yaw 
+    rvec_matrix = cv2.Rodrigues(rvec)[0]
+    proj_matrix = np.hstack((rvec_matrix, tvec))
+    eulerAngles = -cv2.decomposeProjectionMatrix(proj_matrix)[6] 
+    yaw   = eulerAngles[1]
+    pitch = eulerAngles[0]
+    roll  = eulerAngles[2]
+    if pitch > 0:
+        pitch = 180 - pitch
+    elif pitch < 0:
+        pitch = -180 - pitch
+    yaw = -yaw 
+
+    print('pi/ya/ro', pitch, yaw, roll, '\n')
+
+    rmat = cv2.Rodrigues(rvec)[0]
+    cam_pos = -np.matrix(rmat).T * np.matrix(tvec)
+    P = np.hstack((rmat,tvec))
+    euler_angles_radians = -cv2.decomposeProjectionMatrix(P)[6]
+    euler_angles_degrees = 180 * euler_angles_radians/math.pi
+
+    eul    = euler_angles_radians
+    yaw    = 180*eul[1,0]/math.pi # warn: singularity if camera is facing perfectly upward. Value 0 yaw is given by the Y-axis of the world frame.
+    pitch  = 180*((eul[0,0]+math.pi/2)*math.cos(eul[1,0]))/math.pi
+
+    print('v3->eu/ya/pi', euler_angles_radians, '\n', yaw, pitch)
+
+
 
     return distance, distanceo, angle1o, angle2
 
@@ -234,8 +253,8 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
     if len(contours) >= 1:
         # Sort contours by area size (biggest to smallest)
-        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:10]
-       
+        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:4] # 4 is a cheat
+    
         cntsFiltered = []
         centroidDiamonds = []
 
@@ -295,11 +314,11 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                 leftmost = centroidDiamonds[0]
                 rightmost = centroidDiamonds[3]
 
-                centroidDiamonds.sort(key = operator.itemgetter(1))
+                #centroidDiamonds.sort(key = operator.itemgetter(1))
                 #print('Centroid DIamonds sorted by y: ', centroidDiamonds)
 
-                bottommost = centroidDiamonds[3]
-                topmost = centroidDiamonds[0]
+                bottommost = centroidDiamonds[1]
+                topmost = centroidDiamonds[2]
 
                 #print('leftmost: ', leftmost)
                 #print('rightmost: ', rightmost)
@@ -333,17 +352,15 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     cy = int((topmost[1]+bottommost[1])/2)
 
                     YawToDiamond = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
-                    
+                                        
                     # If success then print values to screen                               
                     if success:
-
                         distance, distanceo, angle1, angle2 = compute_output_values(rvec, tvec)
+
                         cv2.putText(image, "ComputeAngle1: " + str(angle1), (40, 140), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
                         cv2.putText(image, "ComputeAngle2: " + str(angle2), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
                         cv2.putText(image, "Distance: " + str(distance), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
                         cv2.putText(image, "Distanceo: " + str(distanceo), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
-                        #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
-                        RobotYawToDiamond = 180-abs(angle2)
                         cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
                         cv2.putText(image, "Distance: " + str(round((distance/12),2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
                         #cv2.putText(image, "RobotYawToDiamond: " + str(round(RobotYawToDiamond,2)), (40, 420), cv2.FONT_HERSHEY_COMPLEX, .6,white)
@@ -391,7 +408,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                         #publishResults(name,value)
                         publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", YawToDiamond)
                         publishNumber(MergeVisionPipeLineTableName, "DistanceToDiamond", round(distance/12,2))
-                        publishNumber(MergeVisionPipeLineTableName, "RotationAngleToDiamondPerpendicular", round(RobotYawToDiamond,2))
+                        publishNumber(MergeVisionPipeLineTableName, "RotationAngleToDiamondPerpendicular", round(angle2,2))
                        
             else:
                 #If Nothing is found, publish -99 and -1 to Network table
@@ -443,23 +460,27 @@ if __name__ == "__main__":
     pts = np.array([[200,80],[230,110],[200,140],[170,110]], np.int32)
     bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
 
+    bgrTestImage = cv2.imread('2021-irahFourDTest/staggeredDiamonds.jpg')
 
     # display the test image to verify it visually
-    cv2.imshow('This is the test image', bgrTestImage)
+    #cv2.imshow('This is the test image', bgrTestImage)
 
     # convert image to hsv from bgr
     hsvTestImage = cv2.cvtColor(bgrTestImage, cv2.COLOR_BGR2HSV)
 
     # using inrange from opencv make mask
-    mskBinary = cv2.inRange(hsvTestImage,  (55, 220, 220), (65, 255, 255),)
+    mskBinary = cv2.inRange(hsvTestImage,  (0, 100, 100), (65, 255, 255),)
+
+    # display the mask to verify it visually
+    #cv2.imshow('This is the mask', mskBinary)
 
     # generate the array of Contours
     contours, hierarchy = cv2.findContours(mskBinary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     print('Found', len(contours), 'contours in this photo!')
 
     # pass test image, binary mask and cotours to function to display all as is
-    centerX = 160
-    centerY = 120
+    centerX = 320
+    centerY = 240
     SEMethodToUse = 1
     TestNTToUse = "Test"
     #bgrfdOut = findDiamond(contours, bgrTestImage, centerX, centerY, mskBinary, SEMethodToUse, TestNTToUse)
