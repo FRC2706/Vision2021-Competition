@@ -384,14 +384,13 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     if success:
                         distance, distanceo, angle1, angle2 = compute_output_values(rvec, tvec)
 
-                        cv2.putText(image, "ComputeAngle1: " + str(angle1), (40, 140), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
-                        cv2.putText(image, "ComputeAngle2: " + str(angle2), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
-                        cv2.putText(image, "Distance: " + str(distance/12), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
-                        cv2.putText(image, "Distanceo: " + str(distanceo/12), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
-                        cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
-                        cv2.putText(image, "Distance: " + str(round((distance/12),2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 1.0,white)
-                        #cv2.putText(image, "RobotYawToDiamond: " + str(round(RobotYawToDiamond,2)), (40, 420), cv2.FONT_HERSHEY_COMPLEX, .6,white)
-                        #cv2.putText(image, "SolvePnPTargetYawToCenter: " + str(round(angle1,2)), (40, 460), cv2.FONT_HERSHEY_COMPLEX, .6,white)
+                        #cv2.putText(image, "ComputeAngle1: " + str(angle1), (40, 140), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
+                        #cv2.putText(image, "ComputeAngle2: " + str(angle2), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
+                        #cv2.putText(image, "Distance: " + str(distance/12), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
+                        #cv2.putText(image, "Distanceo: " + str(distanceo/12), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
+                        cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        cv2.putText(image, "Distance: " + str(round((distance/12),2)), (20, 430), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        cv2.putText(image, "PhiAtDiamond: " + str(round(angle2,2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
                         
                         #start with a non-existing colour
                         
