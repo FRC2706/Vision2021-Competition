@@ -174,15 +174,15 @@ def compute_output_values(rvec, tvec):
     y = tvec[1][0]
     z = math.sin(tilt_angle) * y + math.cos(tilt_angle) * tvec[2][0]
 
-    print('x:',x, xo)
-    print('y:',y, yo)
-    print('z:',z, zo)
+    #print('x:',x, xo)
+    #print('y:',y, yo)
+    #print('z:',z, zo)
 
     # distance in the horizontal plane between camera and target
     distanceo = math.sqrt(xo**2 + yo**2 + zo**2) * distScaleFactor
     distance = math.sqrt(x**2 + z**2) * distScaleFactor
 
-    print('distance:', distance, distanceo)
+    #print('distance:', distance, distanceo)
 
     # horizontal angle between camera center line and target
     angle1InRad = math.atan2(x, z)
@@ -191,7 +191,7 @@ def compute_output_values(rvec, tvec):
     angle1 = math.degrees(angle1InRad)
     angle1o = math.degrees(angle1InRado)
 
-    print('angle1', angle1, angle1o)
+    #print('angle1', angle1, angle1o)
 
     rot, _ = cv2.Rodrigues(rvec)
     rot_inv = rot.transpose()
@@ -200,14 +200,14 @@ def compute_output_values(rvec, tvec):
     angle2InDegrees = math.degrees(angle2InRad)
 
     #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
-    print('raw angle2 in degrees', angle2InDegrees)
+    #print('raw angle2 in degrees', angle2InDegrees)
     
     if angle2InDegrees < 0:
         angle2 = 180 + angle2InDegrees
     else:
         angle2 = -(180 - angle2InDegrees)
     #angle2 = 180-abs(angle2InDegrees)
-    print('angle2', angle2)
+    #print('angle2', angle2, '\n')
 
     #Test LC Method for Yaw
     #https://github.com/mpatacchiola/deepgaze/issues/3
@@ -223,7 +223,7 @@ def compute_output_values(rvec, tvec):
         pitch = -180 - pitch
     yaw = -yaw 
 
-    print('pi/ya/ro', pitch, yaw, roll, '\n')
+    #print('pi/ya/ro', pitch, yaw, roll, '\n')
 
     rmat = cv2.Rodrigues(rvec)[0]
     cam_pos = -np.matrix(rmat).T * np.matrix(tvec)
@@ -235,7 +235,7 @@ def compute_output_values(rvec, tvec):
     yaw    = 180*eul[1,0]/math.pi # warn: singularity if camera is facing perfectly upward. Value 0 yaw is given by the Y-axis of the world frame.
     pitch  = 180*((eul[0,0]+math.pi/2)*math.cos(eul[1,0]))/math.pi
 
-    print('v3->eu/ya/pi', euler_angles_radians, '\n', yaw, pitch)
+    #print('v3->eu/ya/pi', euler_angles_radians, '\n', yaw, pitch)
 
 
 
