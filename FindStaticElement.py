@@ -38,12 +38,12 @@ real_world_coordinates = np.array([
     ]) 
 
 # temporary testing on half size target
-real_world_coordinates = np.array([ 
-    [-5.5625, 0.0, 0.0], # Left most Point
-    [2.375, -6.125, 0.0], # Right most Point
-    [0.0, 0.0, 0.0], # Top most point
-    [-2.375, -6.125, 0.0], # Bottom most Point
-    ]) 
+#real_world_coordinates = np.array([ 
+#    [-5.5625, 0.0, 0.0], # Left most Point
+#    [2.375, -6.125, 0.0], # Right most Point
+#    [0.0, 0.0, 0.0], # Top most point
+#    [-2.375, -6.125, 0.0], # Bottom most Point
+#    ]) 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
@@ -460,7 +460,7 @@ if __name__ == "__main__":
     pts = np.array([[200,80],[230,110],[200,140],[170,110]], np.int32)
     bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
 
-    bgrTestImage = cv2.imread('2021-irahFourDTest/staggeredDiamonds.jpg')
+    bgrTestImage = cv2.imread('2021-irahFourDTest/centroidYawIssue.jpg')
 
     # display the test image to verify it visually
     #cv2.imshow('This is the test image', bgrTestImage)
