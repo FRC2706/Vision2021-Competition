@@ -101,6 +101,10 @@ upper_orange = np.array([12, 255, 255])
 # Robert experiment might 2  dining room
 lower_orange = np.array([0, 200, 175])
 upper_orange = np.array([3, 255, 255])
+# Brian picture 
+lower_orange = np.array([0, 200, 150])
+upper_orange = np.array([3, 255, 255])
+
 
 blingColour = 0
 
