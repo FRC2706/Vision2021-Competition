@@ -55,6 +55,7 @@ def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTabl
     # Gets center of height and width
     centerX = (screenWidth / 2) - .5
     centerY = (screenHeight / 2) - .5
+
     # Copies frame and stores it in image
     image = frame.copy()
     # Processes the contours, takes in (contours, output_image, (centerOfImage)
@@ -112,6 +113,7 @@ def compute_output_values(rvec, tvec):
     # This is a major impact on calculations
     tilt_angle = math.radians(26.18)
     distScaleFactor = 1.028
+    #print('rvec:',rvec)
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
     xo = tvec[0][0]
@@ -252,6 +254,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     cv2.drawContours(image, [c], -1, (36,145,232), 2)
                     centroidDiamonds.append((cx,cy))
 
+
                 #print('Original Centroid Diamond: ', centroidDiamonds)
                 centroidDiamonds.sort(key = operator.itemgetter(0))
                 #print('Centroid Diamonds sorted by x: ', centroidDiamonds)
@@ -280,6 +283,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
                 if (foundCorners):
                     displaycorners(image, outer_corners)
+                    #print('outer_corners:', outer_corners)
                     success, rvec, tvec = findTvecRvec(image, outer_corners, rw_coordinates) 
 
                     #print('leftmost:',leftmost)
@@ -397,7 +401,7 @@ if __name__ == "__main__":
     #bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
 
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4A-04f-left.jpg')
-    bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4B-10f-center.jpg')
+    bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4B-07f-center.jpg')
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4C-04f-left.jpg')
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4D-04f-left.jpg')
 
