@@ -34,7 +34,7 @@ def click_and_crop(event, x, y, flags, param):
         print("h=", h, " s=", s, " v=", v)
 
 # define a string variable for the path to the file
-imagePath = str(Path(__file__).parent / 'OrangePylons' / 'pi_cam_test_night2_01.jpg')
+imagePath = str(Path(__file__).parent / 'OrangePylons' / 'conesTesting3.jpg')
 
 # load input image
 image = cv2.imread(imagePath)
