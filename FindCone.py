@@ -196,6 +196,12 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             print("d1=", d1, "  dMid=", dMid)
 
+            # Sign convention for yaw and phi has changed at the last minute to be positive counterclockwise so
+            # switch signs here
+            yaw1 = -yaw1
+            yawMid = -yawMid
+            phiMid = -phiMid
+
             # Print results on screen
             # Draws line where center of target is
             yawMidDisp = round(yawMid)
