@@ -78,10 +78,10 @@ def load_images_from_folder(folder):
             imagename.append(filename)
     return images, imagename
 
-def draw_circle(event,x,y,flags,param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        green = np.uint8([[[img[y, x, 0], img[y, x, 1], img[y, x, 2]]]])
-        print(img[y, x, 2], img[y, x, 1], img[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
+#def draw_circle(event,x,y,flags,param):
+#    if event == cv2.EVENT_LBUTTONDOWN:
+#        green = np.uint8([[[img[y, x, 0], img[y, x, 1], img[y, x, 2]]]])
+#        print(img[y, x, 2], img[y, x, 1], img[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
 
 # choose video to process -> Outer Target Videos
 #videoname = './OuterTargetVideos/ThirdScale-01.mp4'
@@ -106,8 +106,9 @@ else:  # implies images are to be read
     #images, imagename = load_images_from_folder("./OuterTargetLiger")
     #images, imagename = load_images_from_folder("./2021-irahTapeTesting")
     #images, imagename = load_images_from_folder("./2021-irahFourDiamonds")
-    images, imagename = load_images_from_folder("./2021-irah4D-51T-16C")
 
+    # 
+    images, imagename = load_images_from_folder("./2021-irah5D-70T-16C")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]
@@ -181,24 +182,26 @@ while stayInLoop or cap.isOpened():
         frame = images[currentImg]
         filename = imagename[currentImg]
 
+    processed = frame
+
     if Driver:
-        processed = frame
+        pass
     else:
         if Tape:
             threshold = threshold_video(lower_green, upper_green, frame)
-            processed = findTargets(frame, threshold, Method, MergeVisionPipeLineTableName)
+            processed = findTargets(processed, threshold, Method, MergeVisionPipeLineTableName)
         elif StaticElement:
             threshold = threshold_video(lower_green, upper_green, frame)
-            processed = findStaticElements(frame, threshold, StaticElementMethod, MergeVisionPipeLineTableName)
+            processed = findStaticElements(processed, threshold, StaticElementMethod, MergeVisionPipeLineTableName)
         else:
             if PowerCell:
                 boxBlur = blurImg(frame, yellow_blur)
                 threshold = threshold_video(lower_yellow, upper_yellow, boxBlur)
-                processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
+                processed = findPowerCell(processed, threshold, MergeVisionPipeLineTableName)
             elif ControlPanel:
                 boxBlur = blurImg(frame, yellow_blur)
                 threshold = threshold_video(lower_yellow, upper_yellow, frame)
-                processed = findControlPanel(frame, threshold)
+                processed = findControlPanel(processed, threshold)
 
     # end of cycle so update counter
     #fps.update()
