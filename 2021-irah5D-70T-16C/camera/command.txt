@@ -1,0 +1,1 @@
+python camera_calibration.py --length 13 --width 9 --size 1.5748 --output camera_calib --output-images out cm-01.jpg cm-02.jpg cm-03.jpg cm-04.jpg cm-06.jpg cm-07.jpg cm-08.jpg cm-09.jpg

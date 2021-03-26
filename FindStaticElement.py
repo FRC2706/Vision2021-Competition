@@ -89,12 +89,13 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #                    [0, 0, 1]], dtype = "double"
     #                    )
 
-    camera_matrix = np.array([[676.9254672222575, 0.0, 303.8922263320326], 
-                              [0.0, 677.958895098853, 226.64055316186037], 
+    # this is an HD3000 with a darkening filter, at 1280 x 720, inventory mr-cm-14
+    camera_matrix = np.array([[1126.8315382349601, 0.0, 601.4874636188907], 
+                              [0.0, 1126.2948684756943, 362.12408926710737], 
                               [0.0, 0.0, 1.0]], dtype = "double")
     
-    dist_coeffs = np.array([[0.16171335604097975, -0.9962921370737408, -4.145368586842373e-05, 
-                             0.0015152030328047668, 1.230483016701437]])
+    dist_coeffs = np.array([[0.13974156295719148, -0.876628095187753, 0.002300727445662101,
+                             -0.0033784195004719895, 1.2186619935471499]])
 
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
      #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
@@ -120,8 +121,6 @@ def compute_output_values(rvec, tvec):
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
     tilt_angle = math.radians(26.18)
-    distScaleFactor = 1.028
-    angle2ScaleFactor = 1.0
 
     # Merge code last year
     x = tvec[0][0]
@@ -131,15 +130,17 @@ def compute_output_values(rvec, tvec):
     # adjust z to allow calculation in horizontal plane
     z1 = math.sin(tilt_angle) * y + math.cos(tilt_angle) * z
 
-    # distance in the horizontal plane between camera and target
-    distance = math.sqrt(x**2 + z1**2) * distScaleFactor
+    # distance in the horizontal plane between camera and target in feet
+    dist = math.sqrt(x**2 + z1**2) / 12
+    # equation to correct distance from calibration
+    distance = dist * (-0.001641 * dist**2 + 0.001975 * dist + 2.2816)
 
-    print('horiz distance:', distance)
+    print('horiz distance:', dist, distance)
 
     # horizontal angle between camera center line and target
     angle1InRad = math.atan2(x, z1)
 
-    # not sure what this is, maybe the same
+    # not sure if the above should us z1 which is flat...
     angle1InRadTest = math.atan2(x, z)
     
     angle1 = math.degrees(angle1InRad)
@@ -161,7 +162,7 @@ def compute_output_values(rvec, tvec):
     else:
         angle2 = -(180 - angle2InDegrees)
 
-    angle2 = angle2 * angle2ScaleFactor
+    #angle2
 
     print('angle2', angle2, '\n')
 
@@ -196,7 +197,7 @@ def displaycorners(image, outer_corners):
 def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, MergeVisionPipeLineTableName):
     global blingColour
 
-    angle1ScaleFactor = 1.0
+    userImage = image.copy()
 
     screenHeight, screenWidth, channels = image.shape
     # Seen vision diamonds (correct angle, adjacent to each other)
@@ -258,7 +259,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                         cx, cy = 0, 0
 
                     #print('centroid = ', cx,cy)
-                    cv2.drawContours(image, [c], -1, (36,145,232), 2)
+                    cv2.drawContours(userImage, [c], -1, (36,145,232), 2)
                     centroidDiamonds.append((cx,cy))
 
 
@@ -290,24 +291,37 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                 ], dtype="double") 
 
                 if (foundCorners):
-                    displaycorners(image, outer_corners)
+                    displaycorners(userImage, outer_corners)
                     #print('outer_corners:', outer_corners)
-                    success, rvec, tvec = findTvecRvec(image, outer_corners, rw_coordinates) 
+                    success, rvec, tvec = findTvecRvec(userImage, outer_corners, rw_coordinates) 
 
                     cx = int(centroidDiamonds[2][0])
                     cy = int(centroidDiamonds[2][1])
 
-                    YawToDiamond = calculateYaw(cx, centerX, H_FOCAL_LENGTH) * angle1ScaleFactor
-                                        
                     # If success then print values to screen                               
                     if success:
-                        distance, angle1, angle2 = compute_output_values(rvec, tvec)
-                        angle1 = angle1 * angle1ScaleFactor
 
-                        cv2.putText(image, "Distance: " + str(round((distance/12),2)), (20, 430), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        #cv2.putText(image, "DiamondYaw: " + str(angle1), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        cv2.putText(image, "DiamondYaw: " + str(round(YawToDiamond, 2)), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        cv2.putText(image, "PhiAtDiamond: " + str(round(angle2, 2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        dist1, angle1, angle2 = compute_output_values(rvec, tvec)
+
+                        dist2 = dist1 * dist1
+
+                        yaw = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
+                        if dist1 > 15:
+                            YawToDiamond = yaw * -0.59
+                        else:
+                            YawToDiamond = yaw * (-0.00292 * dist2 + 0.08327 * dist1 - 1.197)
+
+                        print('yaw:',yaw, YawToDiamond)
+
+                        if dist1 > 16:
+                            angle2 = angle2 * -0.8
+                        else:
+                            angle2 = angle2 * (-0.00276 * dist2 + 0.09143 * dist1 - 1.561)
+
+                        cv2.putText(userImage, "Distance: " + str(round(dist1,2)), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        #cv2.putText(userImage, "DiamondYaw: " + str(angle1), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        cv2.putText(userImage, "DiamondYaw: " + str(round(YawToDiamond, 2)), (20, 430), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        cv2.putText(userImage, "PhiAtDiamond: " + str(round(angle2, 2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
                         
                         # start with a non-existing colour
                         # color 0 is red
@@ -344,11 +358,11 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                                 publishString("blingTable", "command", "solid")
                                 blingColour = 0
 
-                        cv2.line(image, (cx, screenHeight), (cx, 0), colour, 2)
-                        cv2.line(image, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
+                        cv2.line(userImage, (cx, screenHeight), (cx, 0), colour, 2)
+                        cv2.line(userImage, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
 
                         #publishResults(name,value)
-                        publishNumber(MergeVisionPipeLineTableName, "DistanceToDiamond", round(distance/12,2))
+                        publishNumber(MergeVisionPipeLineTableName, "DistanceToDiamond", round(dist1,2))
                         #publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", angle1)
                         publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", YawToDiamond)
                         publishNumber(MergeVisionPipeLineTableName, "RotationAngleToDiamondPerpendicular", round(angle2, 2))
@@ -367,7 +381,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
         publishNumber(MergeVisionPipeLineTableName, "RotationAngleToDiamondPerpendicular", -99) 
         publishString("blingTable","command","clear")    
              
-    return image
+    return userImage
 
 # Checks if the diamond contours are worthy 
 def checkDiamondSize(cntArea, cntAspectRatio):
@@ -402,7 +416,7 @@ if __name__ == "__main__":
     #bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
 
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4A-04f-left.jpg')
-    bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4B-07f-center.jpg')
+    bgrTestImage = cv2.imread('2021-irah5D-70T-16C/5F-163f+103+103.jpg')
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4C-04f-left.jpg')
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4D-04f-left.jpg')
 

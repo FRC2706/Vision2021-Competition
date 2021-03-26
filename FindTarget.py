@@ -360,12 +360,13 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #                      [0, 0, 1]], dtype = "double"
     #                      )
 
-    dist_coeffs = np.array([[0.16171335604097975, -0.9962921370737408, -4.145368586842373e-05, 
-                             0.0015152030328047668, 1.230483016701437]])
-
-    camera_matrix = np.array([[676.9254672222575, 0.0, 303.8922263320326], 
-                              [0.0, 677.958895098853, 226.64055316186037], 
+    # this is an HD3000 with a darkening filter, at 1280 x 720, inventory mr-cm-14
+    camera_matrix = np.array([[1126.8315382349601, 0.0, 601.4874636188907], 
+                              [0.0, 1126.2948684756943, 362.12408926710737], 
                               [0.0, 0.0, 1.0]], dtype = "double")
+    
+    dist_coeffs = np.array([[0.13974156295719148, -0.876628095187753, 0.002300727445662101,
+                             -0.0033784195004719895, 1.2186619935471499]])
 
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
  
