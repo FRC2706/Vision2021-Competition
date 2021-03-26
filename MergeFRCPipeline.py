@@ -31,7 +31,6 @@ from FindTarget import *
 from FindStaticElement import *
 from VisionConstants import *
 from VisionUtilities import *
-from VisionMasking import *
 from DistanceFunctions import *
 from ControlPanel import *
 
@@ -183,6 +182,7 @@ ImageCounter = 0
 # Masks the video based on a range of hsv colors
 # Takes in a frame, range of color, and a blurred frame, returns a masked frame
 def threshold_video(lower_color, upper_color, image):
+    
     # Convert BGR to HSV
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
@@ -194,7 +194,9 @@ def threshold_video(lower_color, upper_color, image):
     #knoxville_mask = cv2.bitwise_and(h, cv2.bitwise_and(s,v))
     
     # the simple opencv mask
-    inRange_mask = cv2.inRange(image, lower_color, upper_color)
+    inRange_mask = cv2.inRange(hsv, lower_color, upper_color)
+
+    cleaner_mask = cv2.GaussianBlur(inRange_mask, (5,5), 0)
 
     # for logging of images
     global frameStop
@@ -206,7 +208,7 @@ def threshold_video(lower_color, upper_color, image):
         cv2.imwrite('/mnt/VisionImages/visionImg-' + str(matchNumber) + "-" + str(ImageCounter) + '_mask.png',
                     inRange_mask)
 
-    return inRange_mask
+    return cleaner_mask
 
 #################### FRC VISION PI Image Specific #############
 configFile = "/boot/frc.json"
@@ -591,8 +593,8 @@ if __name__ == "__main__":
             start = milliSince1970()
 
         # because we are timing in this file, have to add the fps to image processed 
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/displayFPS), (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/displayFPS), (40, 100), cv2.FONT_HERSHEY_COMPLEX, 1.5 ,white)
+        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 1.5 ,white)
 
         # networkTable.putBoolean("Driver", True)
         processed = cv2.resize(processed,(320,240),fx=0,fy=0,interpolation=cv2.INTER_CUBIC)

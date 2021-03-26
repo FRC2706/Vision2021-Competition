@@ -179,8 +179,8 @@ def compute_output_values(rvec, tvec):
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
     tilt_angle = math.radians(26.18)
-    distScaleFactor = 1.00
-    angle2ScaleFactor = 1.0
+    distScaleFactor = 1.5678
+    angle2ScaleFactor = 0.5277
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
     xo = tvec[0][0]
@@ -287,7 +287,7 @@ def displaycorners(image, outer_corners):
 
 def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, MergeVisionPipeLineTableName):
     global blingColour
-    angle1ScaleFactor = -1.0
+    angle1ScaleFactor = -0.5815
 
     #global warped
     screenHeight, screenWidth, channels = image.shape
@@ -410,9 +410,9 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                         #cv2.putText(image, "ComputeAngle2: " + str(angle2), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)
                         #cv2.putText(image, "Distance: " + str(distance/12), (40, 180), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                        
                         #cv2.putText(image, "Distanceo: " + str(distanceo/12), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.6,white)                                                
-                        cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        cv2.putText(image, "Distance: " + str(round((distance/12),2)), (20, 430), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        cv2.putText(image, "PhiAtDiamond: " + str(round(angle2,2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                        cv2.putText(image, "DiamondYaw: " + str(YawToDiamond), (40, 560), cv2.FONT_HERSHEY_COMPLEX, 1.5, white)
+                        cv2.putText(image, "Distance: " + str(round((distance/12),2)), (40, 620), cv2.FONT_HERSHEY_COMPLEX, 1.5, white)
+                        cv2.putText(image, "PhiAtDiamond: " + str(round(angle2,2)), (40, 680), cv2.FONT_HERSHEY_COMPLEX, 1.5, white)
                         
                         #start with a non-existing colour
                         

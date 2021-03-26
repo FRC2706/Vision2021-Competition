@@ -187,7 +187,9 @@ while stayInLoop or cap.isOpened():
             threshold = threshold_video(lower_green, upper_green, frame)
             processed = findTargets(frame, threshold, Method, MergeVisionPipeLineTableName)
         elif StaticElement:
+            print(lower_green, upper_green)
             threshold = threshold_video(lower_green, upper_green, frame)
+            cv2.imshow('threshold', threshold)
             processed = findStaticElements(frame, threshold, StaticElementMethod, MergeVisionPipeLineTableName)
         else:
             if PowerCell:
