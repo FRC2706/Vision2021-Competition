@@ -182,19 +182,21 @@ ImageCounter = 0
 
 # Masks the video based on a range of hsv colors
 # Takes in a frame, range of color, and a blurred frame, returns a masked frame
-def threshold_video(lower_color, upper_color, blur):
+def threshold_video(lower_color, upper_color, image):
     # Convert BGR to HSV
-    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    h = threshold_range(h, lower_color[0], upper_color[0])
-    s = threshold_range(s, lower_color[1], upper_color[1])
-    v = threshold_range(v, lower_color[2], upper_color[2])
-    combined_mask = cv2.bitwise_and(h, cv2.bitwise_and(s,v))
-    
-    # hold the HSV image to get only red colors
-    #mask = cv2.inRange(combined, lower_color, upper_color)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    # Returns the masked imageBlurs video to smooth out image
+    # the knoxville method
+    #h, s, v = cv2.split(hsv)
+    #h = threshold_range(h, lower_color[0], upper_color[0])
+    #s = threshold_range(s, lower_color[1], upper_color[1])
+    #v = threshold_range(v, lower_color[2], upper_color[2])
+    #knoxville_mask = cv2.bitwise_and(h, cv2.bitwise_and(s,v))
+    
+    # the simple opencv mask
+    inRange_mask = cv2.inRange(image, lower_color, upper_color)
+
+    # for logging of images
     global frameStop
     if frameStop == 1:
         global ImageCounter, matchNumber, matchNumberDefault
@@ -202,8 +204,9 @@ def threshold_video(lower_color, upper_color, blur):
         if matchNumber == 0:
             matchNumber = matchNumberDefault
         cv2.imwrite('/mnt/VisionImages/visionImg-' + str(matchNumber) + "-" + str(ImageCounter) + '_mask.png',
-                    combined_mask)
-    return combined_mask
+                    inRange_mask)
+
+    return inRange_mask
 
 #################### FRC VISION PI Image Specific #############
 configFile = "/boot/frc.json"
@@ -543,7 +546,7 @@ if __name__ == "__main__":
 
             # elif (networkTableVisionPipeline.getBoolean("ControlPanel", True)):
             #     # Checks if you just want camera for Control Panel, by dent of everything else being false, true by default
-            #     switch = 4
+            #     switch = 5
             #     #cap.autoExpose = True
             #     boxBlur = blurImg(frame, yellow_blur)
             #     # Need to create proper mask for control panel

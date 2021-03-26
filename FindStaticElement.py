@@ -74,6 +74,15 @@ real_world_coordinates = np.array([
     [2.5, 6.125, 0.0], # Bottom right point
     ])
 
+# F
+real_world_coordinates = np.array([ 
+    [-11.125, 0.0, 0.0], # Upper left point
+    [0.0, 0.0, 0.0], # Upper center point
+    [11.125, 0.0, 0.0], # Upper right point
+    [-5.9375, 13.25, 0.0], # Bottom left point
+    [5.9375, 13.25, 0.0], # Bottom right point
+    ])
+
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
 
@@ -147,8 +156,8 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
  
     #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
-    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
-    (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)
+    (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
+    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_EPNP)
     #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
     #success, rvec, tvec = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, rvec, tvec, flags=cv2.SOLVEPNP_ITERATIVE)
 
@@ -170,7 +179,8 @@ def compute_output_values(rvec, tvec):
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
     tilt_angle = math.radians(26.18)
-    distScaleFactor = 1.028
+    distScaleFactor = 1.00
+    angle2ScaleFactor = 1.0
 
     # https://answers.opencv.org/question/86879/rotating-target-changes-distances-computed-with-solvepnp/
     xo = tvec[0][0]
@@ -214,6 +224,8 @@ def compute_output_values(rvec, tvec):
         angle2 = 180 + angle2InDegrees
     else:
         angle2 = -(180 - angle2InDegrees)
+
+    angle2 = angle2 * angle2ScaleFactor
     #angle2 = 180-abs(angle2InDegrees)
     #print('angle2', angle2, '\n')
 
@@ -245,8 +257,6 @@ def compute_output_values(rvec, tvec):
 
     #print('v3->eu/ya/pi', euler_angles_radians, '\n', yaw, pitch)
 
-
-
     return distance, distanceo, angle1o, angle2
 
 #Simple function that displays 4 corners on an image
@@ -277,6 +287,8 @@ def displaycorners(image, outer_corners):
 
 def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, MergeVisionPipeLineTableName):
     global blingColour
+    angle1ScaleFactor = -1.0
+
     #global warped
     screenHeight, screenWidth, channels = image.shape
     # Seen vision diamonds (correct angle, adjacent to each other)
@@ -326,7 +338,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
             # We will work on the filtered contour with the largest area which is the
             # first one in the list
-            if (len(cntsFiltered) >= 4):
+            if (len(cntsFiltered) == 5):
                 #print("Length of cntsFiltered:"+str(len(cntsFiltered)))
 
                 for c in cntsFiltered:
@@ -367,6 +379,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
                 outer_corners = np.array([
                                             leftmost,
+                                            centerother,
                                             rightmost,
                                             leftother,
                                             rightother
@@ -387,7 +400,8 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     cy = int(centroidDiamonds[2][1])
 
                     YawToDiamond = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
-                                        
+                    YawToDiamond = YawToDiamond * angle1ScaleFactor
+
                     # If success then print values to screen                               
                     if success:
                         distance, distanceo, angle1, angle2 = compute_output_values(rvec, tvec)
@@ -495,7 +509,7 @@ if __name__ == "__main__":
     #bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,0,0), -1)
 
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4A-04f-left.jpg')
-    bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4B-10f-center.jpg')
+    bgrTestImage = cv2.imread('2021-irah5D-70T-16C/5f-162F+093+093.jpg')
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4C-04f-left.jpg')
     #bgrTestImage = cv2.imread('2021-irah4D-51T-16C/4D-04f-left.jpg')
 

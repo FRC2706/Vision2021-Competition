@@ -54,14 +54,15 @@ white = (255, 255, 255)
 yellow = (0, 255, 255)
 orange = (60, 255, 255)
 
-# define range of green of retroreflective tape in HSV
+# define range of green (knoxvilled method of masking) of retroreflective tape in HSV
 lower_green = np.array([55, 55, 55])
 upper_green = np.array([100, 255, 255])
 
-# define range of green of retroreflective tape in HSV
-#lower_green = np.array([23, 50, 35])
-#upper_green = np.array([85, 255, 255])
+# define range of green (inRange method of masking) of retroreflective tape in HSV
+lower_green = np.array([23, 55, 55])
+upper_green = np.array([85, 255, 255])
 
+# define yellow
 lower_yellow = np.array([10, 150, 65]) # was 14, 150, 150
 upper_yellow = np.array([30, 255, 255])
 
