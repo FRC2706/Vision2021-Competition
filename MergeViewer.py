@@ -31,6 +31,7 @@ from adrian_pyimage import WebcamVideoStream
 
 # Imports EVERYTHING from these files
 from FindBall import *
+from FindCone import *
 from FindTarget import *
 from FindStaticElement import *
 from VisionConstants import *
@@ -61,11 +62,23 @@ Tape = False
 StaticElement = True
 PowerCell = False
 ControlPanel = False
+Cone = True
 
 # counts frames for writing images
 frameStop = 0
 ImageCounter = 0
 showAverageFPS = False
+
+def click_and_crop(event, x, y, flags, param):
+    # grab references to the global variables
+    #global image, blueval, greenval, redval
+
+    # if the left mouse button was clicked, record the starting
+    # (x, y) coordinates and indicate that cropping is being
+    # performed
+    if event == cv2.EVENT_LBUTTONDOWN:
+        blueval, greenval, redval = image[y,x]
+        print("blueval=", blueval, " greenval=", greenval, " redval=", redval)
 
 #Code to load images from a folder
 def load_images_from_folder(folder):
@@ -110,6 +123,10 @@ else:  # implies images are to be read
 
     # 
     images, imagename = load_images_from_folder("./2021-irah5D-70T-16C")
+
+    #Cone Images
+    images, imagename = load_images_from_folder("./OrangePylons")
+    #images, imagename = load_images_from_folder("./2021-irahConeTesting")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]
@@ -202,7 +219,11 @@ while stayInLoop or cap.isOpened():
             elif ControlPanel:
                 boxBlur = blurImg(frame, yellow_blur)
                 threshold = threshold_video(lower_yellow, upper_yellow, frame)
-                processed = findControlPanel(processed, threshold)
+                processed = findControlPanel(frame, threshold)
+            elif Cone:
+                #boxBlur = blurImg(frame, yellow_blur)
+                threshold = threshold_video(lower_orange, upper_orange, frame)
+                processed = findConeMarker(frame, threshold, MergeVisionPipeLineTableName)
 
     # end of cycle so update counter
     #fps.update()
@@ -227,14 +248,14 @@ while stayInLoop or cap.isOpened():
     # because we are timing in this file, have to add the fps to image processed 
     #cv2.putText(processed, 'elapsed time: {:.2f}'.format(fps.elapsed()), (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
     #cv2.putText(processed, 'FPS: {:.7f}'.format(3.14159265), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-    cv2.putText(processed, "frame time: " + str(int(processedMilli)) + " ms", (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-    cv2.putText(processed, 'Instant FPS: {:.2f}'.format(1000/(processedMilli)), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+    #cv2.putText(processed, "frame time: " + str(int(processedMilli)) + " ms", (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+    #cv2.putText(processed, 'Instant FPS: {:.2f}'.format(1000/(processedMilli)), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
     
     if (showAverageFPS): 
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 120), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 160), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 200), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
+        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 220), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
     else:
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 120), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 220), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
 
     cv2.imshow("raw", frame)
     cv2.setMouseCallback('raw', draw_circle)
