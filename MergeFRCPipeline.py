@@ -27,6 +27,7 @@ import math
 
 # Imports EVERYTHING from these files
 from FindBall import *
+from FindCone import *
 from FindTarget import *
 from VisionConstants import *
 from VisionUtilities import *
@@ -504,13 +505,18 @@ if __name__ == "__main__":
             if (networkTableVisionPipeline.getBoolean("PowerCell", True)):
                 # Checks if you just want to look for PowerCells
                 switch = 3
-                boxBlur = blurImg(frame, yellow_blur)
-                threshold = threshold_video(lower_yellow, upper_yellow, boxBlur)
+                #boxBlur = blurImg(frame, yellow_blur)
+                #threshold = threshold_video(lower_yellow, upper_yellow, boxBlur)
+                threshold_orange = threshold_video(lower_orange, upper_orange, frame)
+
                 if (networkTableVisionPipeline.getBoolean("SendMask", False)):
                     processed = threshold
                 else:   
-                    processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
-
+                    #processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
+                    #processed = findConeMarker(frame, threshold, MergeVisionPipeLineTableName)
+                    #processed = findConeMarkerWithProcessed(frame, processed, threshold, MergeVisionPipeLineTableName)
+                    processed = findConeMarker(frame, threshold_orange, MergeVisionPipeLineTableName)
+            
             # elif (networkTableVisionPipeline.getBoolean("ControlPanel", True)):
             #     # Checks if you just want camera for Control Panel, by dent of everything else being false, true by default
             #     switch = 4
@@ -558,8 +564,8 @@ if __name__ == "__main__":
             start = milliSince1970()
 
         # because we are timing in this file, have to add the fps to image processed 
-        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/displayFPS), (40, 40), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
-        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6 ,white)
+        cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/displayFPS), (20, 40), cv2.FONT_HERSHEY_COMPLEX, 0.5, white)
+        cv2.putText(processed, 'Average FPS: {:.2f}'.format(averageFPS), (20, 60), cv2.FONT_HERSHEY_COMPLEX, 0.5, white)
 
         # networkTable.putBoolean("Driver", True)
         processed = cv2.resize(processed,(320,240),fx=0,fy=0,interpolation=cv2.INTER_CUBIC)
