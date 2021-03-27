@@ -506,16 +506,16 @@ if __name__ == "__main__":
                 # Checks if you just want to look for PowerCells
                 switch = 3
                 #boxBlur = blurImg(frame, yellow_blur)
-                #threshold = threshold_video(lower_yellow, upper_yellow, boxBlur)
+                threshold_yellow = threshold_video(lower_yellow, upper_yellow, frame)
                 threshold_orange = threshold_video(lower_orange, upper_orange, frame)
 
                 if (networkTableVisionPipeline.getBoolean("SendMask", False)):
                     processed = threshold
                 else:   
-                    #processed = findPowerCell(frame, threshold, MergeVisionPipeLineTableName)
+                    processed = findPowerCell(frame, threshold_yellow, MergeVisionPipeLineTableName)
                     #processed = findConeMarker(frame, threshold, MergeVisionPipeLineTableName)
-                    #processed = findConeMarkerWithProcessed(frame, processed, threshold, MergeVisionPipeLineTableName)
-                    processed = findConeMarker(frame, threshold_orange, MergeVisionPipeLineTableName)
+                    processed = findConeMarkerWithProcessed(frame, processed, threshold_orange, MergeVisionPipeLineTableName)
+                    #processed = findConeMarker(frame, threshold_orange, MergeVisionPipeLineTableName)
             
             # elif (networkTableVisionPipeline.getBoolean("ControlPanel", True)):
             #     # Checks if you just want camera for Control Panel, by dent of everything else being false, true by default
