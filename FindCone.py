@@ -36,7 +36,7 @@ def findConeMarkerWithProcessed(frame, processed, mask, MergeVisionPipeLineTable
     else:
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_KCOS)
 
-    print("Number of contours: ", len(contours))
+    #print("Number of contours: ", len(contours))
 
     # Take each frame
     # Gets the shape of video
@@ -59,6 +59,12 @@ def findConeMarkerWithProcessed(frame, processed, mask, MergeVisionPipeLineTable
 def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
     screenHeight, screenWidth, channels = image.shape
     # Seen vision targets (correct angle, adjacent to each other)
+
+    yaw1 = -99.0
+    d1 = -99.0
+    yawMid = -99.0
+    dMid = -99.0
+    phiMid = -99.0
  
     if len(contours) > 0:
         # Sort contours by area size (biggest to smallest)
@@ -140,12 +146,6 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
             # Do calculations depending on whether there are one or two cones
 
-            yaw1 = -99.0
-            d1 = -99.0
-            yawMid = -99.0
-            dMid = -99.0
-            phiMid = -99.0
-
             if len(tallestCone) >= 1:
                 cone1 = tallestCone[0]
                 cv2.circle(image, (cone1[0], cone1[1]), 6, white, -1)
@@ -180,27 +180,22 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                 else:
                     phiMid = 90.0
 
-                #print("v2x=", v2x)
-                #print("v2y=", v2y)
-                #print("v1x=", v1x)
-                #print("v1y=", v1y)
-                #print("v2mv1x=", v2mv1x)
-                #print("v2mv1y=", v2mv1y)
-                #print("phiMid=", phiMid)
-
                 dMid = math.sqrt(wx*wx + wy*wy)
                 yawMidRad = math.atan(wx/wy)
                 yawMid = math.degrees(yawMidRad)
                 screenWidth_div_2 = round(screenWidth / 2)
                 xCoordMid = screenWidth_div_2 + round(screenWidth_div_2 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
 
-            print("d1=", d1, "  dMid=", dMid)
+            #print("d1=", d1, "  dMid=", dMid)
 
             # Sign convention for yaw and phi has changed at the last minute to be positive counterclockwise so
             # switch signs here
-            yaw1 = -yaw1
-            yawMid = -yawMid
-            phiMid = -phiMid
+            if yaw1 != -99.0: 
+                yaw1 = -yaw1
+            if yawMid != -99.0: 
+                yawMid = -yawMid
+            if phiMid != -99.0: 
+                phiMid = -phiMid
 
             # Print results on screen
             # Draws line where center of target is

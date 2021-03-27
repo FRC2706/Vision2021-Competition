@@ -105,8 +105,8 @@ upper_yellow = np.array([30, 255, 255])
 #lower_orange = np.array([0, 200, 175])
 #upper_orange = np.array([3, 255, 255])
 # Wei basement 6:20pm (no lights)
-lower_orange = np.array([0, 125, 160])
-upper_orange = np.array([6, 190, 255])
+#lower_orange = np.array([0, 125, 160])
+#upper_orange = np.array([6, 190, 255])
 # Wei basement 6:40pm (lights on)
 #lower_orange = np.array([8, 100, 150])
 #upper_orange = np.array([17, 150, 200])
@@ -114,8 +114,8 @@ upper_orange = np.array([6, 190, 255])
 #lower_orange = np.array([0, 120, 170])
 #upper_orange = np.array([19, 200, 255])
 # 2021-03-27 rl basement
-#lower_orange = np.array([0, 230, 160])
-#upper_orange = np.array([10, 255, 255])
+lower_orange = np.array([0, 230, 160])
+upper_orange = np.array([10, 255, 255])
 
 
 blingColour = 0
