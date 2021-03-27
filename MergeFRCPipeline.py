@@ -331,7 +331,7 @@ def startCamera(config):
 
 start, switched, prevCam = True, False, 0
 
-currentCam = 0
+currentCam = 1
 
 def switchCam():
     global currentCam, webcam, cameras, streams, cameraServer, cap, image_width, image_height, prevCam
