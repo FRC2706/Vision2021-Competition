@@ -473,9 +473,9 @@ if __name__ == "__main__":
             networkTableVisionPipeline.putBoolean("WriteImages", False)     
 
         if networkTableVisionPipeline.getBoolean("TopCamera", False):
-            currentCam = 1
+            currentCam = 0 # swap
         else:
-            currentCam = 0
+            currentCam = 1 # swap
 
         if networkTableVisionPipeline.getNumber("Cam", currentCam) != prevCam:
             switchCam()
