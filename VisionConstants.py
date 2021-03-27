@@ -50,7 +50,7 @@ KNOWN_BALL_DISTANCE = 6
 KNOWN_CONE_PIXEL_HEIGHT = 22
 KNOWN_CONE_DISTANCE = 6
 
-#tanVA for ball distance calculation in DistanceFunctions.py (RL)
+#tanVA for ball and cone distance calculations in DistanceFunctions.py
 tanVABallDistance=0.295939
 tanVAConeDistance = 0.4233782532
 

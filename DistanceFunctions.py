@@ -125,7 +125,7 @@ def calculateDistWPILibRyan(cntHeight, targetHeight,knownObjectPixelHeight,known
 
     return distance    
 
-def calculateDistWPILibBall2021(cntHeight, targetHeight, VIEWANGLE): 
+def calculateDistWPILibBall2021(cntHeight, targetHeight, VIEWANGLE):
     global image_height, avg
 
     for cnt in avg:
@@ -140,4 +140,8 @@ def calculateDistWPILibBall2021(cntHeight, targetHeight, VIEWANGLE):
 
     PIX_HEIGHT = PIX_HEIGHT / len(avg)
     distance = DISTANCE_CORRECTION_FACTOR * ((targetHeight*480) / (2 * PIX_HEIGHT * (VIEWANGLE)))
+    #print(targetHeight)
+    #print(PIX_HEIGHT)
+    #print(VIEWANGLE)
+    #print(distance)
     return distance

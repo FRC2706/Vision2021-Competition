@@ -106,7 +106,7 @@ elif useWebCam: #test against live camera
 
 else:  # implies images are to be read
     # Power Cell Images
-    #images, imagename = load_images_from_folder("./PowerCellFullScale")
+    images, imagename = load_images_from_folder("./PowerCellFullScale")
     #images, imagename = load_images_from_folder("./PowerCellFullMystery")
     #images, imagename = load_images_from_folder("./PowerCellFullRobot")
 
