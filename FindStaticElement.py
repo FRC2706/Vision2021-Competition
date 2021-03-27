@@ -16,22 +16,22 @@ except ImportError:
     from NetworkTablePublisher import *
 
 #-B -> the above target upside down, a W, drop upper center for four
-real_world_coordinates = np.array([
-    [-5.5625, 0.0, 0.0],
-    [0.0, 0.0, 0.0],
-    [5.5625, 0.0, 0.0],
-    [-2.5, 6.125, 0.0],
-    [2.5, 6.125, 0.0],
-])
+#real_world_coordinates = np.array([
+#    [-5.5625, 0.0, 0.0],
+#    [0.0, 0.0, 0.0],
+#    [5.5625, 0.0, 0.0],
+#    [-2.5, 6.125, 0.0],
+#    [2.5, 6.125, 0.0],
+#])
 
 # F -> full size version of target B, also uses 5 points
-#real_world_coordinates = np.array([ 
-    #[-5.5625, 0.0, 0.0], # Upper left point
-    #[0.0, 0.0, 0.0], # Upper center point
-    #[5.5625, 0.0, 0.0], # Upper right point
-    #[-2.5, 6.125, 0.0], # Bottom left point
-    #[2.5, 6.125, 0.0] # Bottom right point
-#])
+real_world_coordinates = np.array([ 
+    [-5.5625, 0.0, 0.0], # Upper left point
+    [0.0, 0.0, 0.0], # Upper center point
+    [5.5625, 0.0, 0.0], # Upper right point
+    [-2.5, 6.125, 0.0], # Bottom left point
+    [2.5, 6.125, 0.0] # Bottom right point
+])
 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables

@@ -50,7 +50,7 @@ print()
 
 # CHOOSE VIDEO OR FILES HERE!!!!
 # boolean for video input, if true does video, if false images
-useVideo = False
+useVideo = True
 # integer for usb camera to use, boolean for live webcam
 useWebCam = False
 webCamNumber = 1
@@ -58,7 +58,7 @@ webCamNumber = 1
 # ADJUST DESIRED TARGET BASED ON VIDEO OR FILES ABOVE !!!
 Driver = False
 Tape = False
-StaticElement=True
+StaticElement = True
 PowerCell = False
 ControlPanel = False
 
@@ -86,6 +86,7 @@ def load_images_from_folder(folder):
 # choose video to process -> Outer Target Videos
 #videoname = './OuterTargetVideos/ThirdScale-01.mp4'
 videoname = './OuterTargetVideos/FullScale-02.mp4'
+videoname = './StaticElementVideos/test1.mpg'
 
 if useVideo: # test against video
     showAverageFPS = True
