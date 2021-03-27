@@ -16,22 +16,22 @@ except ImportError:
     from NetworkTablePublisher import *
 
 #-B -> the above target upside down, a W, drop upper center for four
-#real_world_coordinates = np.array([
-#    [-5.5625, 0.0, 0.0],
-#    [0.0, 0.0, 0.0],
-#    [5.5625, 0.0, 0.0],
-#    [-2.5, 6.125, 0.0],
-#    [2.5, 6.125, 0.0],
-#])
-
-# F -> full size version of target B, also uses 5 points
-real_world_coordinates = np.array([ 
-    [-5.5625, 0.0, 0.0], # Upper left point
-    [0.0, 0.0, 0.0], # Upper center point
-    [5.5625, 0.0, 0.0], # Upper right point
-    [-2.5, 6.125, 0.0], # Bottom left point
-    [2.5, 6.125, 0.0] # Bottom right point
+real_world_coordinates = np.array([
+    [-5.5625, 0.0, 0.0],
+    [0.0, 0.0, 0.0],
+    [5.5625, 0.0, 0.0],
+    [-2.5, 6.125, 0.0],
+    [2.5, 6.125, 0.0],
 ])
+
+#-F -> full size version of target B, also uses 5 points
+#real_world_coordinates = np.array([ 
+#    [-11.125, 0.0, 0.0], # Upper left point
+#    [0.0, 0.0, 0.0], # Upper center point
+#    [11.125, 0.0, 0.0], # Upper right point
+#    [-5.9375, 13.25, 0.0], # Bottom left point
+#    [5.9375, 13.25, 0.0] # Bottom right point
+#])
 
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
@@ -100,10 +100,11 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
      #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
  
+    # seems no flag and 5 points is most stable
     (success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs)
-    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
-    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_EPNP)
-    #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_UPNP)
+    # less jitter but swaps angle2 sign #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_AP3P)    
+    # lots of jitter #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_EPNP)
+    # lots of jitter #(success, rotation_vector, translation_vector) = cv2.solvePnP(real_world_coordinates, outer_corners, camera_matrix, dist_coeffs, flags=cv2.SOLVEPNP_UPNP)
     
     #print ("Rotation Vector:\n {0}".format(rotation_vector))
     #print ("Translation Vector:\n {0}".format(translation_vector))
@@ -135,7 +136,7 @@ def compute_output_values(rvec, tvec):
     # equation to correct distance from calibration
     distance = dist * (-0.001641 * dist**2 + 0.001975 * dist + 2.2816)
 
-    print('horiz distance:', dist, distance)
+    #print('horiz distance:', dist, distance)
 
     # horizontal angle between camera center line and target
     angle1InRad = math.atan2(x, z1)
@@ -146,7 +147,7 @@ def compute_output_values(rvec, tvec):
     angle1 = math.degrees(angle1InRad)
     angle1Test = math.degrees(angle1InRadTest)
 
-    print('angle1', angle1, angle1Test)
+    #print('angle1', angle1, angle1Test)
 
     rot, _ = cv2.Rodrigues(rvec)
     rot_inv = rot.transpose()
@@ -164,7 +165,7 @@ def compute_output_values(rvec, tvec):
 
     #angle2
 
-    print('angle2', angle2, '\n')
+    #print('angle2', angle2, '\n')
 
     return distance, angle1, angle2
 
@@ -289,6 +290,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     leftother,
                     rightother
                 ], dtype="double") 
+                # option to add centerother to the above for 5
 
                 if (foundCorners):
                     displaycorners(userImage, outer_corners)
@@ -311,12 +313,12 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                         else:
                             YawToDiamond = yaw * (-0.00292 * dist2 + 0.08327 * dist1 - 1.197)
 
-                        print('yaw:',yaw, YawToDiamond)
+                        #print('yaw:',yaw, YawToDiamond)
 
                         if dist1 > 16:
                             angle2 = angle2 * -0.8
                         else:
-                            angle2 = angle2 * (-0.00276 * dist2 + 0.09143 * dist1 - 1.561)
+                            angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
 
                         cv2.putText(userImage, "Distance: " + str(round(dist1,2)), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
                         #cv2.putText(userImage, "DiamondYaw: " + str(angle1), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
