@@ -331,14 +331,14 @@ def startCamera(config):
 
 start, switched, prevCam = True, False, 0
 
-currentCam = 1
+currentCam = 1 #swap this back to 0 once off minibot
 
 def switchCam():
     global currentCam, webcam, cameras, streams, cameraServer, cap, image_width, image_height, prevCam
     if networkTableVisionPipeline.getNumber("Cam", 1):
-        currentCam = 1
+        currentCam = 0 #swap these back for minibot
     else:
-        currentCam = 0
+        currentCam = 1 #swap these back for minibot
     prevCam = currentCam
     cap.stop()
     webcam = cameras[currentCam]
