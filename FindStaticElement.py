@@ -15,7 +15,7 @@ try:
 except ImportError:
     from NetworkTablePublisher import *
 
-#-B -> the above target upside down, a W, drop upper center for four
+#-B -> half size five diamond w pattern, use 5 points if possible with SolvePNP
 real_world_coordinates = np.array([
     [-5.5625, 0.0, 0.0],
     [0.0, 0.0, 0.0],
@@ -33,6 +33,14 @@ real_world_coordinates = np.array([
 #    [5.9375, 13.25, 0.0] # Bottom right point
 #])
 
+#-G -> half size version of target F, on foamboard for minibot
+#real_world_coordinates = np.array([ 
+#    [-8, 0.0, 0.0], # Upper left point
+#    [0.0, 0.0, 0.0], # Upper center point
+#    [8, 0.0, 0.0], # Upper right point
+#    [-3.90625, 9.625, 0.0], # Bottom left point
+#    [3.90625, 9.625, 0.0] # Bottom right point
+#])
 
 # Finds the static elements from the masked image and displays them on original stream + network tables
 def findStaticElements(frame, mask, StaticElementMethod, MergeVisionPipeLineTableName):
@@ -89,13 +97,21 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #                    [0, 0, 1]], dtype = "double"
     #                    )
 
-    # this is an HD3000 with a darkening filter, at 1280 x 720, inventory mr-cm-14
+    # this is an HD3000 with a darkening filter, at 1280 x 720, inventory mr-cm-14, on deep space chassis
     camera_matrix = np.array([[1126.8315382349601, 0.0, 601.4874636188907], 
                               [0.0, 1126.2948684756943, 362.12408926710737], 
                               [0.0, 0.0, 1.0]], dtype = "double")
     
     dist_coeffs = np.array([[0.13974156295719148, -0.876628095187753, 0.002300727445662101,
                              -0.0033784195004719895, 1.2186619935471499]])
+
+    # this is an HD3000 with a darkening filter, at 1280 x 720, inventory mr-cm-??, on rear of minibot
+    #camera_matrix = np.array([[1126.8315382349601, 0.0, 601.4874636188907], 
+    #                          [0.0, 1126.2948684756943, 362.12408926710737], 
+    #                          [0.0, 0.0, 1.0]], dtype = "double")
+    
+    #dist_coeffs = np.array([[0.13974156295719148, -0.876628095187753, 0.002300727445662101,
+    #                         -0.0033784195004719895, 1.2186619935471499]])
 
     #print("Camera Matrix :\n {0}".format(camera_matrix))                           
      #dist_coeffs = np.zeros((4,1)) # Assuming no lens distortion
@@ -111,17 +127,20 @@ def findTvecRvec(image, outer_corners, real_world_coordinates):
     #print ('outer_corners:',outer_corners)
     return success, rotation_vector, translation_vector
 
-#Computer the final output values, 
-#angle 1 is the Yaw to the target
-#distance is the distance to the target
-#angle 2 is the Yaw of the Robot to the target
+# Compute the final output values, 
+# distance is the distance to the target
+# angle 1 is the Yaw to the target
+# angle 2 is the Yaw of the Robot to the target
 
 def compute_output_values(rvec, tvec):
     '''Compute the necessary output distance and angles'''
 
     # The tilt angle only affects the distance and angle1 calcs
     # This is a major impact on calculations
-    tilt_angle = math.radians(26.18)
+    tilt_angle = math.radians(26.18)  # this is the rear angle on deep space chassis
+    #tilt_angle = math.radians(19.15)  # this is the rear angle on minibot
+    #tilt_angle = math.radians(0.0)  # this is the front angle on minibot
+    #tilt_angle = math.radians(xyz)  # this is the rear angle on High Ground and The Senate
 
     # Merge code last year
     x = tvec[0][0]
@@ -133,8 +152,13 @@ def compute_output_values(rvec, tvec):
 
     # distance in the horizontal plane between camera and target in feet
     dist = math.sqrt(x**2 + z1**2) / 12
-    # equation to correct distance from calibration
+
+    # B series equation to correct distance from calibration, uses B series rw with full size target
     distance = dist * (-0.001641 * dist**2 + 0.001975 * dist + 2.2816)
+    # F series equation to correct distance from calibration, uses F series rw with minibot half size
+    #distance = dist * (-xx * dist**2 + yy * dist + zz)
+    # G series equation to correct distance from calibration, uses G series rw with full size target
+    #distance = dist * (-xx * dist**2 + yy * dist + zz)
 
     #print('horiz distance:', dist, distance)
 
@@ -207,167 +231,204 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
     # a value based on screenWidth scales properly if the resolution ever changes.)
     minContourArea = 0.6 * screenWidth
 
-    if len(contours) >= 1:
-        # Sort contours by area size (biggest to smallest)
-        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:5]
+    # make sure at least five contours are found, otherwise move on
+    if len(contours) >= 5:
+
+        # Sort contours by area size (biggest to smallest) keep 10 for relections
+        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:10]
     
         cntsFiltered = []
         centroidDiamonds = []
 
-        # First contour has largest area, so only go further if that one meets minimum area criterion
-        if cntsSorted:
+        # use a loop to filter in desired contours, aka fingerprinting
+        for (j, cnt) in enumerate(cntsSorted):
 
-            for (j, cnt) in enumerate(cntsSorted):
+            # Calculate Contour area
+            cntArea = cv2.contourArea(cnt)
 
-                # Calculate Contour area
-                cntArea = cv2.contourArea(cnt)
-                # rotated rectangle fingerprinting
-                rect = cv2.minAreaRect(cnt)
-                (xr,yr),(wr,hr),ar = rect #x,y width, height, angle of rotation = rotated rect
+            # get rid of zero area contours, and anything small
+            if cntArea <= 50: continue
 
-                #to get rid of height and width switching
-                if hr > wr: 
-                    ar = ar + 90
-                    wr, hr = [hr, wr]
-                else:
-                    ar = ar + 180
-                if ar == 180:
-                    ar = 0
+            # rotated rectangle fingerprinting
+            rect = cv2.minAreaRect(cnt)
+            (xr,yr),(wr,hr),ar = rect #x,y width, height, angle of rotation = rotated rect
 
-                if hr == 0: continue
-                cntAspectRatio = float(wr)/hr
-                minAextent = float(cntArea)/(wr*hr)
+            #to get rid of height and width switching
+            if hr > wr: 
+                ar = ar + 90
+                wr, hr = [hr, wr]
+            else:
+                ar = ar + 180
+            if ar == 180:
+                ar = 0
 
-                # Hull
-                hull = cv2.convexHull(cnt)
-                hull_area = cv2.contourArea(hull)
-                solidity = float(cntArea)/hull_area
+            # if the hr is somehow zero, bad contour, go to next contour
+            if hr == 0: continue
 
+            cntAspectRatio = float(wr)/hr
+            minAextent = float(cntArea)/(wr*hr)
+
+            #print('indiv=', j ,'area', cntArea, 'aspect', cntAspectRatio, 'extent', minAextent)
+
+            # use aspect ratio and minA extent to filter out reflections
+            if (0.9 <= cntAspectRatio <= 1.20) and (0.75 <= minAextent <= 1.0):
                 cntsFiltered.append(cnt)
-                #end fingerprinting
+            else:
+                continue
+            
+            # Hull not really used this year
+            #hull = cv2.convexHull(cnt)
+            #hull_area = cv2.contourArea(hull)
+            #solidity = float(cntArea)/hull_area
 
-            # We will work on the filtered contour with the largest area which is the
-            # first one in the list
-            if (len(cntsFiltered) == 5):
-                #print("Length of cntsFiltered:"+str(len(cntsFiltered)))
+            # end fingerprinting
 
-                for c in cntsFiltered:
-                    M=cv2.moments(c)
-                    if M["m00"] != 0:
-                        cx=int(M['m10']/M["m00"])
-                        cy=int(M['m01']/M["m00"])
+        # Sort contours by area size (biggest to smallest) keep 5 that should be the diamonds
+        diamondSorted = sorted(cntsFiltered, key=lambda x: cv2.contourArea(x), reverse=True)[:5]
+
+        # as long as 5 passed the filter, keep going
+        if (len(diamondSorted) == 5):
+
+            # use a loop to find the coordinates of the largest 5 diamonds
+            for c in diamondSorted:
+                M=cv2.moments(c)
+                if M["m00"] != 0:
+                    cx=int(M['m10']/M["m00"])
+                    cy=int(M['m01']/M["m00"])
+                else:
+                    cx, cy = 0, 0
+
+                #print('centroid = ', cx,cy)
+                cv2.drawContours(userImage, [c], -1, (36,145,232), 2)
+                centroidDiamonds.append((cx,cy))
+
+            #print('Original Centroid Diamond: ', centroidDiamonds)
+            centroidDiamonds.sort(key = operator.itemgetter(0))
+            #print('Centroid Diamonds sorted by x: ', centroidDiamonds)
+
+            leftmost = centroidDiamonds[0]
+            rightmost = centroidDiamonds[4]
+
+            #centroidDiamonds.sort(key = operator.itemgetter(1))
+            #print('Centroid DIamonds sorted by y: ', centroidDiamonds)
+
+            leftother = centroidDiamonds[1]
+            centerother = centroidDiamonds[2]
+            rightother = centroidDiamonds[3]
+
+            #Pick which Corner solving method to use
+            foundCorners = True
+
+            rw_coordinates = real_world_coordinates
+
+            outer_corners = np.array([
+                leftmost,
+                centerother,
+                rightmost,
+                leftother,
+                rightother
+            ], dtype="double") 
+            # option to add centerother to the above for 5
+
+            if (foundCorners):
+                displaycorners(userImage, outer_corners)
+                #print('outer_corners:', outer_corners)
+                success, rvec, tvec = findTvecRvec(userImage, outer_corners, rw_coordinates) 
+
+                cx = int(centroidDiamonds[2][0])
+                cy = int(centroidDiamonds[2][1])
+
+                # If success then print values to screen                               
+                if success:
+
+                    dist1, angle1, angle2 = compute_output_values(rvec, tvec)
+
+                    dist2 = dist1 * dist1
+
+                    yaw = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
+
+                    # B series equation to correct YawToDiamond based on calibration, uses B series rw with full size target
+                    if dist1 > 15:
+                        YawToDiamond = yaw * -0.59
                     else:
-                        cx, cy = 0, 0
+                        YawToDiamond = yaw * (-0.00292 * dist2 + 0.08327 * dist1 - 1.197)
+                    # F series equation to correct YawToDiamond from calibration, uses F series rw with minibot half size
+                    #if dist1 > 15:
+                    #    YawToDiamond = yaw * -0.59
+                    #else:
+                    #    YawToDiamond = yaw * (-0.00292 * dist2 + 0.08327 * dist1 - 1.197)
+                    # G series equation to correct distance from calibration, uses G series rw with full size target
+                    #if dist1 > 15:
+                    #    YawToDiamond = yaw * -0.59
+                    #else:
+                    #    YawToDiamond = yaw * (-0.00292 * dist2 + 0.08327 * dist1 - 1.197)
 
-                    #print('centroid = ', cx,cy)
-                    cv2.drawContours(userImage, [c], -1, (36,145,232), 2)
-                    centroidDiamonds.append((cx,cy))
+                    #print('yaw:',yaw, YawToDiamond)
 
+                    # B series equation to correct angle2 based on calibration, uses B series rw with full size target
+                    if dist1 > 16:
+                        angle2 = angle2 * -0.8
+                    else:
+                        angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
+                    # F series equation to correct angle2 from calibration, uses F series rw with minibot half size
+                    #if dist1 > 16:
+                    #    angle2 = angle2 * -0.8
+                    #else:
+                    #    angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
+                    # G series equation to correct angle2 from calibration, uses G series rw with full size target
+                    #if dist1 > 16:
+                    #    angle2 = angle2 * -0.8
+                    #else:
+                    #    angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
 
-                #print('Original Centroid Diamond: ', centroidDiamonds)
-                centroidDiamonds.sort(key = operator.itemgetter(0))
-                #print('Centroid Diamonds sorted by x: ', centroidDiamonds)
-
-                leftmost = centroidDiamonds[0]
-                rightmost = centroidDiamonds[4]
-
-                #centroidDiamonds.sort(key = operator.itemgetter(1))
-                #print('Centroid DIamonds sorted by y: ', centroidDiamonds)
-
-                leftother = centroidDiamonds[1]
-                centerother = centroidDiamonds[2]
-                rightother = centroidDiamonds[3]
-
-                #Pick which Corner solving method to use
-                foundCorners = True
-
-                rw_coordinates = real_world_coordinates
-
-                outer_corners = np.array([
-                    leftmost,
-                    centerother,
-                    rightmost,
-                    leftother,
-                    rightother
-                ], dtype="double") 
-                # option to add centerother to the above for 5
-
-                if (foundCorners):
-                    displaycorners(userImage, outer_corners)
-                    #print('outer_corners:', outer_corners)
-                    success, rvec, tvec = findTvecRvec(userImage, outer_corners, rw_coordinates) 
-
-                    cx = int(centroidDiamonds[2][0])
-                    cy = int(centroidDiamonds[2][1])
-
-                    # If success then print values to screen                               
-                    if success:
-
-                        dist1, angle1, angle2 = compute_output_values(rvec, tvec)
-
-                        dist2 = dist1 * dist1
-
-                        yaw = calculateYaw(cx, centerX, H_FOCAL_LENGTH)
-                        if dist1 > 15:
-                            YawToDiamond = yaw * -0.59
-                        else:
-                            YawToDiamond = yaw * (-0.00292 * dist2 + 0.08327 * dist1 - 1.197)
-
-                        #print('yaw:',yaw, YawToDiamond)
-
-                        if dist1 > 16:
-                            angle2 = angle2 * -0.8
-                        else:
-                            angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
-
-                        cv2.putText(userImage, "Distance: " + str(round(dist1,2)), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        #cv2.putText(userImage, "DiamondYaw: " + str(angle1), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        cv2.putText(userImage, "DiamondYaw: " + str(round(YawToDiamond, 2)), (20, 430), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
-                        cv2.putText(userImage, "PhiAtDiamond: " + str(round(angle2, 2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                    cv2.putText(userImage, "Distance: " + str(round(dist1,2)), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                    #cv2.putText(userImage, "DiamondYaw: " + str(angle1), (20, 400), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                    cv2.putText(userImage, "DiamondYaw: " + str(round(YawToDiamond, 2)), (20, 430), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                    cv2.putText(userImage, "PhiAtDiamond: " + str(round(angle2, 2)), (20, 460), cv2.FONT_HERSHEY_COMPLEX, 0.8,white)
+                    
+                    # start with a non-existing colour
+                    # color 0 is red
+                    # color 1 is yellow
+                    # color 2 is green
+                    if (YawToDiamond >= -2 and YawToDiamond <= 2):
+                        colour = green
+                        #Use Bling
+                        #Set Green colour
+                        if (blingColour != 2):
+                            publishNumber("blingTable", "green", 255)
+                            publishNumber("blingTable", "blue", 0)
+                            publishNumber("blingTable", "red", 0)
+                            publishNumber("blingTable", "wait_ms", 0)
+                            publishString("blingTable", "command","solid")
+                            blingColour = 2
+                    if ((YawToDiamond >= -5 and YawToDiamond < -2) or (YawToDiamond > 2 and YawToDiamond <= 5)):  
+                        colour = yellow
                         
-                        # start with a non-existing colour
-                        # color 0 is red
-                        # color 1 is yellow
-                        # color 2 is green
-                        if (YawToDiamond >= -2 and YawToDiamond <= 2):
-                            colour = green
-                            #Use Bling
-                            #Set Green colour
-                            if (blingColour != 2):
-                                publishNumber("blingTable", "green", 255)
-                                publishNumber("blingTable", "blue", 0)
-                                publishNumber("blingTable", "red", 0)
-                                publishNumber("blingTable", "wait_ms", 0)
-                                publishString("blingTable", "command","solid")
-                                blingColour = 2
-                        if ((YawToDiamond >= -5 and YawToDiamond < -2) or (YawToDiamond > 2 and YawToDiamond <= 5)):  
-                            colour = yellow
-                            
-                            if (blingColour != 1):
-                                publishNumber("blingTable", "red", 255)
-                                publishNumber("blingTable", "green", 255)
-                                publishNumber("blingTable", "blue", 0)
-                                publishNumber("blingTable", "wait_ms", 0)
-                                publishString("blingTable", "command", "solid")
-                                blingColour = 1
-                        if ((YawToDiamond < -5 or YawToDiamond > 5)):  
-                            colour = red
-                            if (blingColour != 0):
-                                publishNumber("blingTable", "red", 255)
-                                publishNumber("blingTable", "blue", 0)
-                                publishNumber("blingTable", "green", 0)
-                                publishNumber("blingTable", "wait_ms", 0)
-                                publishString("blingTable", "command", "solid")
-                                blingColour = 0
+                        if (blingColour != 1):
+                            publishNumber("blingTable", "red", 255)
+                            publishNumber("blingTable", "green", 255)
+                            publishNumber("blingTable", "blue", 0)
+                            publishNumber("blingTable", "wait_ms", 0)
+                            publishString("blingTable", "command", "solid")
+                            blingColour = 1
+                    if ((YawToDiamond < -5 or YawToDiamond > 5)):  
+                        colour = red
+                        if (blingColour != 0):
+                            publishNumber("blingTable", "red", 255)
+                            publishNumber("blingTable", "blue", 0)
+                            publishNumber("blingTable", "green", 0)
+                            publishNumber("blingTable", "wait_ms", 0)
+                            publishString("blingTable", "command", "solid")
+                            blingColour = 0
 
-                        cv2.line(userImage, (cx, screenHeight), (cx, 0), colour, 2)
-                        cv2.line(userImage, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
+                    cv2.line(userImage, (cx, screenHeight), (cx, 0), colour, 2)
+                    cv2.line(userImage, (round(centerX), screenHeight), (round(centerX), 0), white, 2)
 
-                        #publishResults(name,value)
-                        publishNumber(MergeVisionPipeLineTableName, "DistanceToDiamond", round(dist1,2))
-                        #publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", angle1)
-                        publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", YawToDiamond)
-                        publishNumber(MergeVisionPipeLineTableName, "RotationAngleToDiamondPerpendicular", round(angle2, 2))
+                    #publishResults(name,value)
+                    publishNumber(MergeVisionPipeLineTableName, "DistanceToDiamond", round(dist1,2))
+                    #publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", angle1)
+                    publishNumber(MergeVisionPipeLineTableName, "YawToDiamond", YawToDiamond)
+                    publishNumber(MergeVisionPipeLineTableName, "RotationAngleToDiamondPerpendicular", round(angle2, 2))
                        
             else:
                 #If Nothing is found, publish -99 and -1 to Network table
