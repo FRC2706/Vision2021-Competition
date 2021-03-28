@@ -35,3 +35,17 @@ def threshold_video(lower_color, upper_color, blur):
     # Returns the masked imageBlurs video to smooth out image
 
     return combined_mask
+
+def threshold_video_inRange(lower_color, upper_color, blur):
+    # Convert BGR to HSV
+    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+
+    # using inrange from opencv make mask
+    mskBinary = cv2.inRange(hsv, lower_color, upper_color,)
+    
+    # hold the HSV image to get only red colors
+    # mask = cv2.inRange(combined, lower_color, upper_color)
+
+    # Returns the masked imageBlurs video to smooth out image
+
+    return mskBinary

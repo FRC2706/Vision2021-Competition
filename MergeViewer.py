@@ -62,7 +62,7 @@ Tape = False
 StaticElement = True
 PowerCell = False
 ControlPanel = False
-Cone = True
+Cone = False
 
 # counts frames for writing images
 frameStop = 0
@@ -125,7 +125,7 @@ else:  # implies images are to be read
     images, imagename = load_images_from_folder("./2021-irah5D-70T-16C")
 
     #Cone Images
-    images, imagename = load_images_from_folder("./OrangePylons")
+    #images, imagename = load_images_from_folder("./OrangePylons")
     #images, imagename = load_images_from_folder("./2021-irahConeTesting")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
@@ -209,7 +209,7 @@ while stayInLoop or cap.isOpened():
             threshold = threshold_video(lower_green, upper_green, frame)
             processed = findTargets(processed, threshold, Method, MergeVisionPipeLineTableName)
         elif StaticElement:
-            threshold = threshold_video(lower_green, upper_green, frame)
+            threshold = threshold_video_inRange(lower_green, upper_green, frame)
             processed = findStaticElements(processed, threshold, StaticElementMethod, MergeVisionPipeLineTableName)
         else:
             if PowerCell:

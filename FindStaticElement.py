@@ -16,22 +16,22 @@ except ImportError:
     from NetworkTablePublisher import *
 
 #-B -> half size five diamond w pattern, use 5 points if possible with SolvePNP
-real_world_coordinates = np.array([
-    [-5.5625, 0.0, 0.0],
-    [0.0, 0.0, 0.0],
-    [5.5625, 0.0, 0.0],
-    [-2.5, 6.125, 0.0],
-    [2.5, 6.125, 0.0],
-])
+#real_world_coordinates = np.array([
+#    [-5.5625, 0.0, 0.0],
+#    [0.0, 0.0, 0.0],
+#    [5.5625, 0.0, 0.0],
+#    [-2.5, 6.125, 0.0],
+#    [2.5, 6.125, 0.0],
+#])
 
 #-F -> full size version of target B, also uses 5 points
-#real_world_coordinates = np.array([ 
-#    [-11.125, 0.0, 0.0], # Upper left point
-#    [0.0, 0.0, 0.0], # Upper center point
-#    [11.125, 0.0, 0.0], # Upper right point
-#    [-5.9375, 13.25, 0.0], # Bottom left point
-#    [5.9375, 13.25, 0.0] # Bottom right point
-#])
+real_world_coordinates = np.array([ 
+    [-11.125, 0.0, 0.0], # Upper left point
+    [0.0, 0.0, 0.0], # Upper center point
+    [11.125, 0.0, 0.0], # Upper right point
+    [-5.9375, -13.25, 0.0], # Bottom left point
+    [5.9375, -13.25, 0.0] # Bottom right point
+])
 
 #-G -> half size version of target F, on foamboard for minibot
 #real_world_coordinates = np.array([ 
@@ -154,7 +154,7 @@ def compute_output_values(rvec, tvec):
     dist = math.sqrt(x**2 + z1**2) / 12
 
     # B series equation to correct distance from calibration, uses B series rw with full size target
-    distance = dist * (-0.001641 * dist**2 + 0.001975 * dist + 2.2816)
+    #distance = dist * (-0.001641 * dist**2 + 0.001975 * dist + 2.2816)
     # F series equation to correct distance from calibration, uses F series rw with minibot half size
     #distance = dist * (-xx * dist**2 + yy * dist + zz)
     # G series equation to correct distance from calibration, uses G series rw with full size target
@@ -171,7 +171,7 @@ def compute_output_values(rvec, tvec):
     angle1 = math.degrees(angle1InRad)
     angle1Test = math.degrees(angle1InRadTest)
 
-    #print('angle1', angle1, angle1Test)
+    print('angle1', angle1, angle1Test)
 
     rot, _ = cv2.Rodrigues(rvec)
     rot_inv = rot.transpose()
@@ -182,16 +182,16 @@ def compute_output_values(rvec, tvec):
     #calculate RobotYawToDiamond based on Robot offset (subtract 180 degrees)
     #print('raw angle2 in degrees', angle2InDegrees)
     
-    if angle2InDegrees < 0:
-        angle2 = 180 + angle2InDegrees
-    else:
-        angle2 = -(180 - angle2InDegrees)
+    #if angle2InDegrees < 0:
+    #    angle2 = 180 + angle2InDegrees
+    #else:
+    #    angle2 = -(180 - angle2InDegrees)
 
     #angle2
 
     #print('angle2', angle2, '\n')
 
-    return distance, angle1, angle2
+    return dist, angle1, angle2InDegrees
 
 #Simple function that displays 4 corners on an image
 #A np.array() is expected as the input argument
@@ -232,10 +232,10 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
     minContourArea = 0.6 * screenWidth
 
     # make sure at least five contours are found, otherwise move on
-    if len(contours) >= 5:
+    if len(contours) >= 1:
 
         # Sort contours by area size (biggest to smallest) keep 10 for relections
-        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:10]
+        cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:5]
     
         cntsFiltered = []
         centroidDiamonds = []
@@ -247,7 +247,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
             cntArea = cv2.contourArea(cnt)
 
             # get rid of zero area contours, and anything small
-            if cntArea <= 50: continue
+            #if cntArea <= 50: continue
 
             # rotated rectangle fingerprinting
             rect = cv2.minAreaRect(cnt)
@@ -271,10 +271,10 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
             #print('indiv=', j ,'area', cntArea, 'aspect', cntAspectRatio, 'extent', minAextent)
 
             # use aspect ratio and minA extent to filter out reflections
-            if (0.9 <= cntAspectRatio <= 1.20) and (0.75 <= minAextent <= 1.0):
-                cntsFiltered.append(cnt)
-            else:
-                continue
+            #if (0.9 <= cntAspectRatio <= 1.20) and (0.75 <= minAextent <= 1.0):
+            cntsFiltered.append(cnt)
+            #else:
+            #    continue
             
             # Hull not really used this year
             #hull = cv2.convexHull(cnt)
@@ -366,10 +366,10 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
                     #print('yaw:',yaw, YawToDiamond)
 
                     # B series equation to correct angle2 based on calibration, uses B series rw with full size target
-                    if dist1 > 16:
-                        angle2 = angle2 * -0.8
-                    else:
-                        angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
+                    #if dist1 > 16:
+                    #    angle2 = angle2 * -0.8
+                    #else:
+                    #    angle2 = angle2 * (-0.002745 * dist2 + 0.09161 * dist1 - 1.5675)
                     # F series equation to correct angle2 from calibration, uses F series rw with minibot half size
                     #if dist1 > 16:
                     #    angle2 = angle2 * -0.8
