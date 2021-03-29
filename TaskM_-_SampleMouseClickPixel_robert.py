@@ -30,11 +30,14 @@ def click_and_crop(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         blueval, greenval, redval = image[y,x]
         h, s, v = hsv[y,x]
+        print("x=", x, " y=", y)
         print("blueval=", blueval, " greenval=", greenval, " redval=", redval)
         print("h=", h, " s=", s, " v=", v)
 
 # define a string variable for the path to the file
-imagePath = str(Path(__file__).parent / 'OrangePylons' / 'pi_cam_test_night2_01.jpg')
+imagePath = str(Path(__file__).parent / 'OrangePylons' / 'rl_final_01.jpg')
+#imagePath = str(Path(__file__).parent / '2021-irahConeTesting' / 'AutoNav-FullS-00f.jpg')
+
 
 # load input image
 image = cv2.imread(imagePath)
