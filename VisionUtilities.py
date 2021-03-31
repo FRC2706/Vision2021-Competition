@@ -76,10 +76,30 @@ def getEllipseRotation(image, cnt):
         rotation = translateRotation(rotation, width, height)
         return rotation   
 
-def draw_circle(event,x,y,flags,param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        green = np.uint8([[[img[y, x, 0], img[y, x, 1], img[y, x, 2]]]])
-        #print(img[y, x, 2], img[y, x, 1], img[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
+#def draw_circle(event,x,y,flags,param):
+#    if event == cv2.EVENT_LBUTTONDOWN:
+#        green = np.uint8([[[img[y, x, 0], img[y, x, 1], img[y, x, 2]]]])
+#        #print(img[y, x, 2], img[y, x, 1], img[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
 
 def milliSince1970():
-    return int((datetime.datetime.utcnow() - datetime.datetime(1970,1,1)).total_seconds()*1000)               
+    return int((datetime.datetime.utcnow() - datetime.datetime(1970,1,1)).total_seconds()*1000)
+
+# Deal with odd behavior of cv3 vs cv4 and MinARect in OPenCV
+def fixMinAreaRect(rectangle):
+    cv2Version = '{0}'.format(cv2.__version__)
+    #print ('raw=>', rectangle)
+    ((xmr, ymr), (wmr, hmr), amr) = rectangle
+
+    if cv2Version[0] == '3':
+        if wmr > hmr:
+            wmr, hmr = hmr, wmr
+            amr = (90 + amr)
+    else:
+        if wmr > hmr:
+            #print('here')
+            wmr, hmr = hmr, wmr
+            amr = - (90 - amr)
+
+    #print ('rect-aft', ((xmr, ymr), (wmr, hmr), amr))
+
+    return ((xmr, ymr), (wmr, hmr), amr)               

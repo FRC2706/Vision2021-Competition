@@ -36,10 +36,11 @@ from VisionMasking import *
 from DistanceFunctions import *
 from ControlPanel import *
 
-print("Using python version {0}".format(sys.version))
-print()
-print('OpenCV version is', cv2.__version__)
-print()
+print('\n')
+print('Python version', sys.version, '\n')
+# Print opencv version string
+cv2Version = '{0}'.format(cv2.__version__)
+print('OpenCV version', '{0}'.format(cv2.__version__), '\n')
 
 # import the necessary packages
 import datetime
@@ -528,14 +529,14 @@ if __name__ == "__main__":
                 # Checks if you just want to look for PowerCells
                 switch = 3
                 #boxBlur = blurImg(frame, yellow_blur)
-                threshold_yellow = threshold_video(lower_yellow, upper_yellow, boxBlur)
+                threshold_yellow = threshold_video(lower_yellow, upper_yellow, frame)
                 threshold_orange = threshold_video(lower_orange, upper_orange, frame)
 
                 if (networkTableVisionPipeline.getBoolean("SendMask", False)):
                     processed = threshold
                 else:   
                     processed = findPowerCell(frame, threshold_yellow, MergeVisionPipeLineTableName)
-                    processed = findConeMarkerWithProcessed(frame, processed, threshold, MergeVisionPipeLineTableName)
+                    processed = findConeMarkerWithProcessed(frame, processed, threshold_orange, MergeVisionPipeLineTableName)
             elif (networkTableVisionPipeline.getBoolean("Diamond", True)):
                  switch = 4
                  SE_Method = int(networkTableVisionPipeline.getNumber("SE_Method", 1))

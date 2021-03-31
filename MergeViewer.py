@@ -41,11 +41,12 @@ from DistanceFunctions import *
 from ControlPanel import *
 print()
 print("--- Merge Viewer Starting ---")
-print()
-print("Using python version {0}".format(sys.version))
-print()
-print('OpenCV Version = ', cv2.__version__)
-print()
+# Print python version
+print('\n')
+print('Python version', sys.version, '\n')
+# Print opencv version string
+cv2Version = '{0}'.format(cv2.__version__)
+print('OpenCV version', '{0}'.format(cv2.__version__), '\n')
 
 ###################### PROCESSING OPENCV ################################
 
@@ -59,7 +60,7 @@ webCamNumber = 1
 # ADJUST DESIRED TARGET BASED ON VIDEO OR FILES ABOVE !!!
 Driver = False
 Tape = False
-StaticElement = True
+StaticElement = False
 PowerCell = False
 ControlPanel = False
 Cone = True
@@ -69,16 +70,16 @@ frameStop = 0
 ImageCounter = 0
 showAverageFPS = False
 
-def click_and_crop(event, x, y, flags, param):
+#def click_and_crop(event, x, y, flags, param):
     # grab references to the global variables
     #global image, blueval, greenval, redval
 
     # if the left mouse button was clicked, record the starting
     # (x, y) coordinates and indicate that cropping is being
     # performed
-    if event == cv2.EVENT_LBUTTONDOWN:
-        blueval, greenval, redval = image[y,x]
-        print("blueval=", blueval, " greenval=", greenval, " redval=", redval)
+    #if event == cv2.EVENT_LBUTTONDOWN:
+    #    blueval, greenval, redval = image[y,x]
+    #    print("blueval=", blueval, " greenval=", greenval, " redval=", redval)
 
 #Code to load images from a folder
 def load_images_from_folder(folder):
@@ -91,23 +92,32 @@ def load_images_from_folder(folder):
             imagename.append(filename)
     return images, imagename
 
-#def draw_circle(event,x,y,flags,param):
-#    if event == cv2.EVENT_LBUTTONDOWN:
-#        green = np.uint8([[[img[y, x, 0], img[y, x, 1], img[y, x, 2]]]])
-#        print(img[y, x, 2], img[y, x, 1], img[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
+def draw_circle(event,x,y,flags,param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        green = np.uint8([[[frame[y, x, 0], frame[y, x, 1], frame[y, x, 2]]]])
+        print(frame[y, x, 2], frame[y, x, 1], frame[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
 
 # choose video to process -> Outer Target Videos
 #videoname = './OuterTargetVideos/ThirdScale-01.mp4'
-videoname = './OuterTargetVideos/FullScale-02.mp4'
-videoname = './StaticElementVideos/test1.mpg'
+#videoname = './OuterTargetVideos/FullScale-02.mp4'
+#videoname = './StaticElementVideos/test1.mpg'
+#videoname = './2021-irahConeTesting/bounce1.mpg'
+#videoname = './2021-irahConeTesting/bounce2.mpg'
+#videoname = './2021-irahConeTesting/bounce3.mpg'
+videoname = './2021-irahConeTesting/bounce3-better.mpg'
 
 if useVideo: # test against video
     showAverageFPS = True
+    #setup flag for pausing video, start in pause mode
+    booPause = True
 
 elif useWebCam: #test against live camera
     showAverageFPS = True
 
 else:  # implies images are to be read
+    #setup flag for pausing video, start in pause mode
+    booPause = False
+
     # Power Cell Images
     #images, imagename = load_images_from_folder("./PowerCellFullScale")
     #images, imagename = load_images_from_folder("./PowerCellFullMystery")
@@ -122,11 +132,11 @@ else:  # implies images are to be read
     #images, imagename = load_images_from_folder("./2021-irahFourDiamonds")
 
     # 
-    images, imagename = load_images_from_folder("./2021-irah5D-70T-16C")
+    #images, imagename = load_images_from_folder("./2021-irah5D-70T-16C")
 
     #Cone Images
-    images, imagename = load_images_from_folder("./OrangePylons")
-    #images, imagename = load_images_from_folder("./2021-irahConeTesting")
+    #images, imagename = load_images_from_folder("./OrangePylons")
+    images, imagename = load_images_from_folder("./2021-irahConeTesting")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]
@@ -182,6 +192,7 @@ displayFPS = 3.14159265
 begin = milliSince1970()
 start = begin
 prev_update = start
+
 
 while stayInLoop or cap.isOpened():
 
@@ -257,15 +268,40 @@ while stayInLoop or cap.isOpened():
     else:
         cv2.putText(processed, 'Grouped FPS: {:.2f}'.format(1000/(displayFPS)), (40, 220), cv2.FONT_HERSHEY_COMPLEX, 0.4, white)
 
-    cv2.imshow("raw", frame)
-    cv2.setMouseCallback('raw', draw_circle)
+    #cv2.imshow('raw', frame)
+    #cv2.setMouseCallback('raw', draw_circle)
 
     if useVideo or useWebCam:
+        
+        if booPause:
+            cv2.putText(processed, '-->  Pause Mode On, <space> to toggle, <f> for next frame  <--', (40, 80), cv2.FONT_HERSHEY_COMPLEX, 0.6, yellow)
         cv2.imshow('videoname', processed)
 
-        key = cv2.waitKey(1)
-        if key == 27:
+
+        # get input from user on keyboard
+        key = cv2.waitKeyEx(1)
+        
+        if key == 32: # the spacebar, which toggles pause
+            booPause = not booPause
+            continue
+        elif key == 102: # the 'f' key to advance to next frame
+            booPause = True
+            continue
+        elif key == 27: # the 'esc' key to quit
             break
+
+        # if user has asked for pause above
+        if booPause:
+            key2 = cv2.waitKeyEx(0) # this time wait for user
+            
+            if key2 == 32: # this turns off the pause
+                booPause = False
+                continue
+            elif key2 == 102: # this advances to next frame
+                booPause = True
+                continue
+            elif key2 == 27: # the escape key to quit
+                break
 
     else:
         cv2.imshow(filename, processed)

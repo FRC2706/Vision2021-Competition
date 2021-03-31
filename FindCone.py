@@ -11,7 +11,10 @@ try:
     from PrintPublisher import *
 except ImportError:
     from NetworkTablePublisher import *
-    
+
+# record opencv version for variability between versions
+cv2Version = '{0}'.format(cv2.__version__) 
+
 # Note that findConeMarker uses findCone which uses checkCone
 
 # Draws on the image - > contours and finds center and yaw of nearest powercell, and second nearest
@@ -57,6 +60,9 @@ def findConeMarkerWithProcessed(frame, processed, mask, MergeVisionPipeLineTable
 # centerX is center x coordinate of image
 # centerY is center y coordinate of image
 def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
+
+    global cv2Version
+
     screenHeight, screenWidth, channels = image.shape
     # Seen vision targets (correct angle, adjacent to each other)
 
@@ -67,13 +73,35 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
     phiMid = -99.0
  
     if len(contours) > 0:
+
         # Sort contours by area size (biggest to smallest)
         cntsSorted = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[:5]
+
         cntHeight = 0
         biggestCone = []
         pairOfCones = []
+
         for indiv, cnt in enumerate(cntsSorted):
         #for cnt in cntsSorted:
+
+            # Calculate Contour area
+            cntArea = cv2.contourArea(cnt)
+
+            # check if area too small, move on
+            if (cntArea <= 50): continue
+
+            # rotated rectangle fingerprinting
+            rect = cv2.minAreaRect(cnt)
+            rect = fixMinAreaRect(rect)
+            (xr,yr),(wr,hr),ar = rect #x,y width, height, angle of rotation = rotated rect
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+
+            print(indiv, cntArea, ar)
+
+            # use orientation to filter out some shapes
+            if (ar <= -46) or (ar >= 46): continue
+            
             x, y, w, h = cv2.boundingRect(cnt)
 
             if (w > h):
@@ -82,13 +110,8 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             ##print("Area of bounding rec: " + str(w*h))
             boundingRectArea = w*h
 
-            # Calculate Contour area
-            cntArea = cv2.contourArea(cnt)
             ##print("Area of contour: " + str(cntArea))
             #print("indiv=", indiv, " boundingRectArea=", boundingRectArea, " cntArea=", cntArea)
-
-            if (cntArea < 3):
-                continue
 
             #percentage of contour in bounding rect
             boundingExtent = float(cntArea/boundingRectArea)
@@ -107,6 +130,7 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
                     cy = int(M["m01"] / M["m00"])
                 else:
                     cx, cy = 0, 0
+
                 if (len(cntsSorted) > 0):
 
                     ##### DRAWS CONTOUR######                   
@@ -120,7 +144,8 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
                     # Draws contour of bounding rectangle in red
                     cv2.rectangle(image, (x, y), (x + w, y + h), red, 1)
-                   
+                    cv2.drawContours(image, [box] ,0 ,blue ,2)
+
                     # Appends important info to array
                     if [cx, cy, cnt, bottomHeight] not in biggestCone:
                         biggestCone.append([cx, cy, cnt, h])
@@ -258,8 +283,13 @@ if __name__ == "__main__":
     # create empty bgr image for the test
     bgrTestImage = np.zeros(shape=[240, 320, 3], dtype=np.uint8)
 
-    # draw a yellow rectangle on the test image
-    bgrTestImage = cv2.circle(bgrTestImage,(100,100), 50, (0,255,255),-1)
+    # draw a left yellow cone on the test image
+    pts = np.array([[45,51],[55,51],[75,110],[35,115]], np.int32)
+    bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,255,255), -1)
+
+    # draw a right green tape on the test image
+    pts = np.array([[147,56],[163,51],[176,98],[160,102]], np.int32)
+    bgrTestImage = cv2.drawContours(bgrTestImage,[pts],0,(0,255,255), -1)
 
     # display the test image to verify it visually
     cv2.imshow('This is the test', bgrTestImage)

@@ -21,9 +21,9 @@ def threshold_video(lower_color, upper_color, blur):
 
     h, s, v = cv2.split(hsv)
 
-    h = threshold_range(h, lower_color[0]-1, upper_color[0])
-    s = threshold_range(s, lower_color[1]-1, upper_color[1])
-    v = threshold_range(v, lower_color[2]-1, upper_color[2])
+    h = threshold_range(h, lower_color[0], upper_color[0])
+    s = threshold_range(s, lower_color[1], upper_color[1])
+    v = threshold_range(v, lower_color[2], upper_color[2])
     combined_mask = cv2.bitwise_and(h, cv2.bitwise_and(s, v))
     
     #show the mask

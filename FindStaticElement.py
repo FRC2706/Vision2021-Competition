@@ -226,7 +226,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
 
     screenHeight, screenWidth, channels = image.shape
     # Seen vision diamonds (correct angle, adjacent to each other)
-    diamonds = []
+    diamonds = [] 
     # Constant used as minimum area for fingerprinting is equal to 60% of screenWidth. (Using 
     # a value based on screenWidth scales properly if the resolution ever changes.)
     minContourArea = 0.6 * screenWidth
