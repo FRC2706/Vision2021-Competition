@@ -52,7 +52,7 @@ print('OpenCV version', '{0}'.format(cv2.__version__), '\n')
 
 # CHOOSE VIDEO OR FILES HERE!!!!
 # boolean for video input, if true does video, if false images
-useVideo = False
+useVideo = True
 # integer for usb camera to use, boolean for live webcam
 useWebCam = False
 webCamNumber = 1
