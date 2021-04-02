@@ -52,7 +52,7 @@ print('OpenCV version', '{0}'.format(cv2.__version__), '\n')
 
 # CHOOSE VIDEO OR FILES HERE!!!!
 # boolean for video input, if true does video, if false images
-useVideo = True
+useVideo = False
 # integer for usb camera to use, boolean for live webcam
 useWebCam = False
 webCamNumber = 1
@@ -136,7 +136,10 @@ else:  # implies images are to be read
 
     #Cone Images
     #images, imagename = load_images_from_folder("./OrangePylons")
-    images, imagename = load_images_from_folder("./2021-irahConeTesting")
+    #images, imagename = load_images_from_folder("./2021-irahConeTesting")
+
+    #Marker Images
+    images, imagename = load_images_from_folder("./2021-irahMarkerTesting")
 
     # finds height/width of camera frame (eg. 640 width, 480 height)
     image_height, image_width = images[0].shape[:2]

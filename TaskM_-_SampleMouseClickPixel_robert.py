@@ -31,12 +31,12 @@ def click_and_crop(event, x, y, flags, param):
         blueval, greenval, redval = image[y,x]
         h, s, v = hsv[y,x]
         print("x=", x, " y=", y)
-        print("blueval=", blueval, " greenval=", greenval, " redval=", redval)
-        print("h=", h, " s=", s, " v=", v)
+        print("blueval=", blueval, " greenval=", greenval, " redval=", redval, "-->  h=", h, " s=", s, " v=", v)
 
 # define a string variable for the path to the file
-imagePath = str(Path(__file__).parent / 'OrangePylons' / 'rl_final_01.jpg')
+#imagePath = str(Path(__file__).parent / 'OrangePylons' / 'rl_final_01.jpg')
 #imagePath = str(Path(__file__).parent / '2021-irahConeTesting' / 'AutoNav-FullS-00f.jpg')
+imagePath = str(Path(__file__).parent / '2021-irahMarkerTesting' / 'marker-05+071f+001+076f+001.jpg')
 
 
 # load input image
