@@ -68,9 +68,11 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
 
     yaw1 = -99.0
     d1 = -99.0
+    yaw2 = -99.0
+    d2 = -99.0
     yawMid = -99.0
     dMid = -99.0
-    phiMid = -99.0
+    phi = -99.0
  
     if len(contours) > 0:
 
@@ -97,7 +99,7 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             box = cv2.boxPoints(rect)
             box = np.int0(box)
 
-            print(indiv, cntArea, ar)
+            #print(indiv, cntArea, ar)
 
             # use orientation to filter out some shapes
             if (ar <= -46) or (ar >= 46): continue
@@ -169,86 +171,134 @@ def findCone(contours, image, centerX, centerY, MergeVisionPipeLineTableName):
             #        cx1 = int(M1["m10"] / M1["m00"])    
             #        avecxof2 = int((cx0+cx1)/2.0)
 
-            # Do calculations depending on whether there are one or two cones
+            # Do calculations for distance and yaw of of nearest single cone (dSingle, yawSingle), 
+            # distance and yaw of midpoint of nearest two cones (dMid, yawMid), and angle between line 
+            # of sight of camera and line entering nearest two cones that is perpendicular to the line 
+            # segment connecting the cones (phi). These calculations will only be done if there are an 
+            # adequate number of cones found in the field of view.
+            #
+            # Note that these calculations use an x-y coordinate system that following the standard mathematical
+            # coordinate system where the x-axis is horitontal and positive to the right, the y axis is
+            # vertical and upwards. The original of the coordinate system is at the camera and the y axis
+            # is along the line of sight of the camera. The camera is assumed to be horizontal and the
+            # x and y axes are parallel to the ground. The z dimension is not used.
+            # 
 
             if len(tallestCone) >= 1:
                 cone1 = tallestCone[0]
                 cv2.circle(image, (cone1[0], cone1[1]), 6, white, -1)
                 xCoord1 = cone1[0]
                 yaw1 = calculateYaw(xCoord1, centerX, H_FOCAL_LENGTH)
-                d1 = calculateDistWPILibBall2021(cone1[3], TARGET_CONE_HEIGHT, tanVAConeDistance)
+                #print("pixel height 1: ", cone1[3])
+                d1 = calculateDistWPILibBall2021(cone1[3], TARGET_CONE_HEIGHT, tanVAConeDistance, screenWidth)
+                #print("d1=", d1)
 
             if len(tallestCone) >= 2:
                 cone2 = tallestCone[1]
                 cv2.circle(image, (cone2[0], cone2[1]), 6, white, -1)
                 xCoord2 = cone2[0]
                 yaw2 = calculateYaw(xCoord2, centerX, H_FOCAL_LENGTH)
-                d2 = calculateDistWPILibBall2021(cone2[3], TARGET_CONE_HEIGHT, tanVAConeDistance)
+                #print("pixel height 2: ", cone2[3])
+                d2 = calculateDistWPILibBall2021(cone2[3], TARGET_CONE_HEIGHT, tanVAConeDistance, screenWidth)
+                #print("d2=", d2)
+                #print("screenWidth=", screenWidth, " screenHeight=", screenHeight)
 
                 yaw1Rad = math.radians(yaw1)
                 yaw2Rad = math.radians(yaw2)
 
+                # v1 and v2 are the vectors from the origin to the first and second nearest cones
                 v1x = d1*math.sin(yaw1Rad)
                 v1y = d1*math.cos(yaw1Rad)
                 v2x = d2*math.sin(yaw2Rad)
                 v2y = d2*math.cos(yaw2Rad)
+                #print("v1x=", v1x)
+                #print("v1y=", v1y)
+                #print("v2x=", v2x)
+                #print("v2y=", v2y)
 
+                # w is the vector from the origin to the midpoint between the two cones and can be
+                # found from simple vector math w = v1 + 0.5*(v2-v1) = 0.5*(v1+v2)
                 wx = 0.5*(v1x + v2x)
                 wy = 0.5*(v1y + v2y)
 
-                v2mv1x = v2x - v1x
-                v2mv1y = v2y - v1y
-
-                if (v2mv1x != 0.0):
-                    phiMidRad = math.atan(-v2mv1y/v2mv1x)
-                    phiMid = math.degrees(phiMidRad)
-                else:
-                    phiMid = 90.0
-
+                # Can now calculate distance and yaw to the midpoint
                 dMid = math.sqrt(wx*wx + wy*wy)
                 yawMidRad = math.atan(wx/wy)
                 yawMid = math.degrees(yawMidRad)
-                screenWidth_div_2 = round(screenWidth / 2)
-                xCoordMid = screenWidth_div_2 + round(screenWidth_div_2 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
 
-            #print("d1=", d1, "  dMid=", dMid)
+                # Calculate some intermediate quantities used later for phiMid
+                v2mv1x = v2x - v1x
+                v2mv1y = v2y - v1y
+                #print("v2mv1x=", v2mv1x)
+                #print("v2mv1y=", v2mv1y)
+                 
+                # thetaRad is the angle between the line of sight of the camera and the segment between
+                # the two nearest cones and is used to compute phi below
+                if (v2mv1y != 0.0):
+                    thetaRad = math.atan(v2mv1x/v2mv1y)
+                elif v2mv1x >= 0.0:
+                    thetaRad = math.pi/2.0
+                else:
+                    thetaRad = -math.pi/2.0
+
+                # phi is the angle between the line of sight of the camera and the line entering the two
+                # cones according to the the way the robot would be expected to drive through the cones 
+                # given its current position. The way it would drive through depends on a comparison between
+                # the yaw angle of the first (i.e. nearest) cone and the angle theta of the line segment
+                # connecting the two cones. 
+                if thetaRad > yaw1Rad:
+                    # Robot will drive around the right of the nearest cone and then through the two cones
+                    phiRad = thetaRad - math.pi/2.0
+                else:
+                    # Robot will drive around the left of the nearest cone and then through the two cones
+                    phiRad = thetaRad + math.pi/2.0
+                phi = math.degrees(phiRad)
 
             # Sign convention for yaw and phi has changed at the last minute to be positive counterclockwise so
             # switch signs here
             if yaw1 != -99.0: 
                 yaw1 = -yaw1
+            if yaw2 != -99.0: 
+                yaw2 = -yaw2
             if yawMid != -99.0: 
                 yawMid = -yawMid
-            if phiMid != -99.0: 
-                phiMid = -phiMid
+            if phi != -99.0: 
+                phi = -phi
 
-            # Print results on screen
-            # Draws line where center of target is
+            # Print results on screen. Include results for single second nearest cone for debugging
+            # purposes even though they are not written to the network tables.
+            # Draw vertical blue line where center of through center of nearest target and vertical red
+            # line through center of midpoint between the two cones
+
+            yawSingleDisp = round(yaw1)
+            dSingleDisp = round(d1, 1) 
+            yaw2Disp = round(yaw2)   
+            d2Disp = round(d2, 1)      
             yawMidDisp = round(yawMid)
             dMidDisp = round(dMid, 1)
-            yawSingleDisp = round(yaw1)
-            dSingleDisp = round(d1, 1)          
-            phiMidDisp = round(phiMid)
+            phiDisp = round(phi)
 
             if len(tallestCone) >= 1:
-                xCoordSingleDisp = xCoord1
-                cv2.line(image, (xCoordSingleDisp, screenHeight), (xCoordSingleDisp, 0), blue, 2)
+                cv2.line(image, (xCoord1, screenHeight), (xCoord1, 0), blue, 2)
             if len(tallestCone) >= 2:
-                xCoordMidDisp = xCoordMid
-                cv2.line(image, (xCoordMidDisp, screenHeight), (xCoordMidDisp, 0), red, 2)
+                screenWidth_div_2 = round(screenWidth / 2)
+                xCoordMid = screenWidth_div_2 + round(screenWidth_div_2 * math.tan(yawMidRad)/math.tan(horizontalView/2.0))
+                cv2.line(image, (xCoordMid, screenHeight), (xCoordMid, 0), red, 2)
 
             cv2.putText(image, "Yaw Single: " + str(yawSingleDisp), (20, 160), cv2.FONT_HERSHEY_COMPLEX, .5, white)
             cv2.putText(image, "Dist Single: " + str(dSingleDisp), (20, 180), cv2.FONT_HERSHEY_COMPLEX, .5, white)
-            cv2.putText(image, "Yaw Mid: " + str(yawMidDisp), (180, 160), cv2.FONT_HERSHEY_COMPLEX, .5, white)
-            cv2.putText(image, "Dist Mid: " + str(dMidDisp), (180, 180), cv2.FONT_HERSHEY_COMPLEX, .5, white)
-            cv2.putText(image, "Phi Mid: " + str(phiMidDisp), (180, 200), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Yaw2: " + str(yaw2Disp), (180, 160), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Dist2: " + str(d2Disp), (180, 180), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Yaw Mid: " + str(yawMidDisp), (340, 160), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Dist Mid: " + str(dMidDisp), (340, 180), cv2.FONT_HERSHEY_COMPLEX, .5, white)
+            cv2.putText(image, "Phi: " + str(phiDisp), (340, 200), cv2.FONT_HERSHEY_COMPLEX, .5, white)
 
             # pushes cone angle to network tables
             publishNumber(MergeVisionPipeLineTableName, "YawToSingleCone", yaw1)
             publishNumber(MergeVisionPipeLineTableName, "DistanceSingleToCone", d1)
             publishNumber(MergeVisionPipeLineTableName, "YawToTwoConeMidpoint", yawMid)
             publishNumber(MergeVisionPipeLineTableName, "DistanceToTwoConeMidpoint", dMid)
-            publishNumber(MergeVisionPipeLineTableName, "RotationAngleToTwoConePerpendicular", phiMid)
+            publishNumber(MergeVisionPipeLineTableName, "RotationAngleToTwoConePerpendicular", phi)
 
         return image
 
