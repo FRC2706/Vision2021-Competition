@@ -122,8 +122,12 @@ upper_yellow = np.array([30, 255, 255])
 #lower_orange = np.array([0, 120, 170])
 #upper_orange = np.array([19, 200, 255])
 # 2021-03-27 rl basement
+#cones at night in parking lot
 lower_orange = np.array([0, 100, 100])
 upper_orange = np.array([20, 255, 255])
+# markers on water bottles
+#lower_orange = np.array([10, 100, 140])
+#upper_orange = np.array([23, 255, 255])
 
 
 blingColour = 0
