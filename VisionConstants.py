@@ -135,4 +135,9 @@ blingColour = 0
 # Very simple correction factor used in distance compuation function calculateDistWPILibBall2021 
 # in DistanceFunctions.py. Take a measurement from a known distance and set it equal to measurement
 # divided by known disance. If you don't know what to put, set this to 1.
-DISTANCE_CORRECTION_FACTOR = 3.0/5.0
+
+# For HD3000 based on pictures from RL's basement
+#DISTANCE_CORRECTION_FACTOR = 3.0/5.0
+
+# For wide angle lens based on pictures in 2021-irahMarkerTesting
+DISTANCE_CORRECTION_FACTOR = 5.1/8.9
