@@ -78,8 +78,8 @@ def load_images_from_folder(folder):
 
 def draw_circle(event,x,y,flags,param):
     if event == cv2.EVENT_LBUTTONDOWN:
-        green = np.uint8([[[img[y, x, 0], img[y, x, 1], img[y, x, 2]]]])
-        print(img[y, x, 2], img[y, x, 1], img[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
+        green = np.uint8([[[frame[y, x, 0], frame[y, x, 1], frame[y, x, 2]]]])
+        print(frame[y, x, 2], frame[y, x, 1], frame[y, x, 0], cv2.cvtColor(green,cv2.COLOR_BGR2HSV))  
 
 # choose video to process -> Outer Target Videos
 #videoname = './OuterTargetVideos/ThirdScale-01.mp4'
