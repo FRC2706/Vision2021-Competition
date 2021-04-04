@@ -240,7 +240,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
         cntsFiltered = []
         centroidDiamonds = []
 
-        print('\n')
+        #print('\n')
 
         # use a loop to filter in desired contours, aka fingerprinting
         for (j, cnt) in enumerate(cntsSorted):
@@ -270,7 +270,7 @@ def findDiamond(contours, image, centerX, centerY, mask, StaticElementMethod, Me
             cntAspectRatio = float(wr)/hr
             minAextent = float(cntArea)/(wr*hr)
 
-            print('indiv=', j ,'area', cntArea, 'aspect', cntAspectRatio, 'extent', minAextent)
+            #print('indiv=', j ,'area', cntArea, 'aspect', cntAspectRatio, 'extent', minAextent)
 
             # use aspect ratio and minA extent to filter out reflections
             if (0.9 <= cntAspectRatio <= 1.31) and (0.75 <= minAextent <= 1.0):
